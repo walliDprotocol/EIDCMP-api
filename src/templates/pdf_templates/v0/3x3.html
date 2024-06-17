@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html style="margin:0;height:6.14in;width:8.73in">
+    <head>
+        <mate charest="utf-8" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:100,300,400,500,600,700,800,900">
+
+        {{#each sig_fonts}}
+        <link rel="stylesheet" href="{{ this }}">
+        {{/each}}
+
+    </head>
+    <body style="
+        display: block;
+        position: relative;
+        width:100%;
+        height:100%;
+        padding: 0px;
+        margin: 0px;
+        background-image: url('https://cdn.filestackcontent.com/2oU0aNkRuqk7UzYyDXxw');
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        font-family: 'Montserrat' 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        color: #414141;
+        border-style:dashed;
+        border-color: transparent;
+        ">
+
+        <div style="position:relative;margin-top:4%;margin-bottom:0;margin-left:auto;margin-right:auto;width:14%;height:17%;">
+            <img src="{{ img_src }}" width="100%:" height="100%">
+        </div>
+
+        <div style="position:relative;margin-top:3.7%;font-size: 1.4em;">
+            <h4 style="text-align:center;margin-bottom:0;">{{ credential_name }}</h4>
+            <h4 style="position:relative;font-weight:lighter;text-align:center;margin-top:1.8%;">{{ dca_name }}</h4>
+        </div>
+
+        <div style="
+        position: absolute; 
+        top: 56%;
+        left: 43%;
+        width: 11.2%;
+        height: 13.6%;
+        z-index: 2;">
+            <img src="{{ img_src }}" width="100%:" height="100%">
+        </div>
+
+
+        <div style="
+        position: absolute; 
+        top: 76.8%;
+        left: 43%;
+        width: 11.2%;
+        height: 13.6%;
+        z-index: 2;">
+            <img src="https://cdn.filestackcontent.com/2oU0aNkRuqk7UzYyDXxw" width="100%:" height="100%">
+        </div>
+
+        <div style="font-size: 1.2em;position:relative;text-align:center;margin-right:9%;margin-left:11%;width:80%;margin-top:4%;">
+            <table style="position:relative;height:100%;width:100%;table-layout:fixed;margin-top:0;">
+                <tr>
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.zz.attr}}
+                        <span style="font-weight:lighter;">{{ grid.zz.key }}</span><br><span style="font-weight:600;">{{ grid.zz.value }}</span>
+                    {{/if}} 
+                    </td>
+
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.zo.attr}}
+                        <span style="font-weight:lighter;">{{ grid.zo.key }}</span><br><span style="font-weight:600;">{{ grid.zo.value }}</span>
+                    {{/if}}
+                    </td>
+
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.zt.attr}}
+                        <span style="font-weight:lighter;">{{ grid.zt.key }}</span><br><span style="font-weight:600;">{{ grid.zt.value }}</span>
+                    {{/if}} 
+                    </td>
+
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.oz.attr}}
+                        <span style="font-weight:lighter;">{{ grid.oz.key }}</span><br><span style="font-weight:600;">{{ grid.oz.value }}</span>
+                    {{/if}}
+                    </td>
+                    
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.oo.attr}}
+                        <span style="font-weight:lighter;">{{ grid.oo.key }}</span><br><span style="font-weight:600;">{{ grid.oo.value }}</span>
+                    </td>
+                    {{/if}}
+                    
+                    {{#if grid.oo.img}}
+                    <td style="
+                    background-image: url('{{grid.oo.url}}');
+                    background-repeat: no-repeat;
+                    background-size: 100% 100%;
+                    padding-bottom:2em;text-align:center;">
+                    </td>
+                    {{/if}}
+
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.ot.attr}}
+                        <span style="font-weight:lighter;">{{ grid.ot.key }}</span><br><span style="font-weight:600;">{{ grid.ot.value }}</span>
+                    {{/if}} 
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                        <span style="font-weight:lighter;font-family:Arial;border-bottom-style:solid;border-width:thin;">{{ grid.sig0.signature }}</span>
+                        <br style="font-weight:lighter;border-bottom:thin;border-bottom-style: solid;">
+                        <span style="font-weight:600; font-size: small;">{{ grid.sig0.value }}</span>
+                        <br>
+                        <span style="font-weight:lighter; font-size: small;">{{ grid.sig0.meta }}</span>
+                    </td>
+
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                    {{#if grid.to.attr}}
+                        <span style="font-weight:lighter;">{{ grid.to.key }}</span><br><span style="font-weight:600;">{{ grid.to.value }}</span>
+                    {{/if}}
+                    </td>
+
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;">
+                        <span style="font-weight:lighter;font-family:Arial;border-bottom-style:solid;border-width:thin;">{{ grid.sig1.signature }}</span>
+                        <br style="font-weight:lighter;border-bottom:thin;border-bottom-style: solid;">
+                        <span style="font-weight:600; font-size: small;">{{ grid.sig1.value }}</span>
+                        <br>
+                        <span style="font-weight:lighter; font-size: small;">{{ grid.sig1.meta }}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </body>
+</html>

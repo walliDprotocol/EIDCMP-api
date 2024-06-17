@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html style="margin:0;height:6.14in;width:8.73in">
+    <head>
+        <mate charest="utf-8" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:100,300,400,500,600,700,800,900">
+
+        <style>
+            body{
+                display: block;
+                position: relative;
+                width:100%;
+                height:100%;
+                padding: 0px;
+                margin: 0px;
+                background-image: url({{background_url}});
+                background-repeat: no-repeat;
+                background-size: 100% 100%;
+                font-family: 'Montserrat' 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+                color: #373c43;
+                border-style:dashed;
+                border-color: transparent;
+            }
+        </style>
+
+    </head>
+    <body>
+
+        <div style="font-size:0.6em;position:relative;text-align:center;margin-right:5%;margin-left:5%;width:90%;margin-top:8%;">
+            <table style="position:relative;height:100%;width:100%;table-layout:fixed;margin-top:0;">
+                <tr>
+                    {{#each headers}}
+                    <th style="text-align:left;font-weight:lighter;">{{ this }}</th>
+                    {{/each}}
+                </tr>
+                {{#each rows}}
+                <tr>
+                    {{#each this}}
+                    <td style="vertical-align:top;padding-bottom:2em;text-align:left;font-weight:600;">{{ this }}</td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+
+            </table>
+        </div>
+
+    </body>
+</html>

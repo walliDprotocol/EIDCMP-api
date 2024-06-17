@@ -1,0 +1,56 @@
+[
+  {
+      "description": "Estacionar en lugares prohibidos",
+      "active": false,
+      "penaltyPoints": 2,
+      "appliedOn": null,
+      "severity": 1,
+      "translationKey": "infractions.parkingInProhibitedPlaces",
+      "title": "Estacionar en lugares prohibidos"
+  },
+  {
+      "description": "Uso del teléfono móvil mientras se conduce",
+      "active": false,
+      "penaltyPoints": 2,
+      "appliedOn": null,
+      "severity": 1,
+      "translationKey": "infractions.useOfMobilePhoneWhileDriving",
+      "title": "Uso del teléfono móvil mientras se conduce"
+  },
+  {
+      "description": "No respetar las señales de tráfico (señal amarilla)",
+      "active": false,
+      "penaltyPoints": 4,
+      "appliedOn": null,
+      "severity": 2,
+      "translationKey": "infractions.notRespectingTrafficSignalsYellow",
+      "title": "No respetar las señales de tráfico (señal amarilla)"
+  },
+  {
+      "description": "No respetar las señales de tráfico (señal rojo)",
+      "active": false,
+      "penaltyPoints": 6,
+      "appliedOn": null,
+      "severity": 3,
+      "translationKey": "infractions.notRespectingTrafficSignalsRed",
+      "title": "No respetar las señales de tráfico (señal rojo)"
+  },
+  {
+      "description": "Nivel de alcohol en sangre superior al permitido (0.25 -0.50 mg/ml)",
+      "active": false,
+      "penaltyPoints": 4,
+      "appliedOn": null,
+      "severity": 2,
+      "translationKey": "infractions.alcoholLevelExceedsPermitted",
+      "title": "Nivel de alcohol en sangre superior al permitido (0.25 -0.50 mg/ml)"
+  },
+  {
+      "description": "Nivel de alcohol en sangre superior al permitido (> 0.50 mg/ml)",
+      "active": false,
+      "penaltyPoints": 6,
+      "appliedOn": null,
+      "severity": 3,
+      "translationKey": "infractions.alcoholLevelExceedsPermitted",
+      "title": "Nivel de alcohol en sangre superior al permitido (> 0.50 mg/ml)"
+  }
+]

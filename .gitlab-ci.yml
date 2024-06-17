@@ -1,0 +1,45 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  TAG: $CI_PIPELINE_ID
+  FILES_PATH: /mnt/build-images/k8s/protocol/service-manager-portal
+  FILES_PATH_DEMO: /mnt/build-images/k8s/protocol/service-manager-portal/demo-build
+
+test:
+  stage: test
+  environment: development
+  only:
+  - demo
+  tags:
+  - dca-portal
+  - docker image
+  script:
+  - echo "Running test - will create docker for website (demo branch)"
+  - $FILES_PATH_DEMO/build-images.sh
+
+
+build:
+  stage: build
+  environment: development
+  only:
+  - master
+  tags:
+  - dca-portal
+  - docker image
+  script:
+  - $FILES_PATH/build-images.sh
+
+deploy:
+  stage: deploy
+  environment: development
+  only:
+  - master
+  when: manual
+  tags:
+  - dca-portal
+  - docker image
+  script:
+  - $FILES_PATH/deploy-image.sh

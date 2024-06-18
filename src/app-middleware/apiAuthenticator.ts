@@ -17,6 +17,7 @@ const { UNAUTHORIZED } = ErrorType;
  */
 const authRoutes = [
   '/api/v1/',
+  '/api/v1/auth/profile',
 ];
 const authRoutesException = [
   '/api/v1/auth/',
@@ -34,7 +35,7 @@ const signValidatorHandler = async (req: Request, res: Response, next: NextFunct
 
   const calledUrl = req.originalUrl.split('?')[0];
   if (authRoutes.some((route) => calledUrl.includes(route))
-   && !authRoutesException.some((route) => calledUrl.includes(route))) {
+   && !authRoutesException.some((route) => calledUrl.includes(route) && !authRoutes.includes(calledUrl))) {
     try {
       logDebug('authorization', authorization);
       if (!authorization) {

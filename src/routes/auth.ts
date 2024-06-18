@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import parameterValidator from 'src/core-services/parameterValidator';
-import { issueTokenForUser, loginUser } from 'src/services/auth';
+import { issueTokenForUser, loginUser, userProfile } from 'src/services/auth';
 import config from 'src/config';
 import passport from 'passport';
 
@@ -45,12 +45,21 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.get('/profile', async (req, res) => {
+  logDebug(' **** profile route **** ', req.user);
+
+  const user = await userProfile(req.user);
+
+  res.json(user);
+});
+
 /**
  *
  *  Google authenticator
  * */
 router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
-  const { token } = issueTokenForUser({ id: req?.user?.id });
+  logDebug(' **** google callback route **** ', req.user);
+  const { token } = issueTokenForUser({ id: req?.user?.authId });
   // Send token to client
   logDebug(token);
 

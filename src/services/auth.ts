@@ -78,6 +78,25 @@ export const loginUser = async (data: any) => {
   }
 };
 
+export const userProfile = async (data: any) => {
+  logDebug('********* userProfile **********', data);
+  try {
+    const user = await DB.findOne(DataBaseSchemas.AUTH, { _id: data.id });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const filter = ['id', 'username', 'email', 'walletAddress'];
+    const userFiltered = filterObject(user.toJSON(), filter);
+    logDebug(' ****user **** after', userFiltered);
+
+    return userFiltered;
+  } catch (ex) {
+    logError('userProfile ', ex);
+    throw ex;
+  }
+};
+
 export async function getApiToken(token: string) {
   const jwt = (await DB.findOne(DataBaseSchemas.TOKEN, { token }))?.jwt;
   logDebug('jwt', jwt);

@@ -137,7 +137,7 @@ const inviteNewUser = async (input) => {
       tid: input.tid.trim(),
       cid: input.cid.trim(),
       email: input.email,
-      categories: input.categories,
+      imgArray: input.imgArray,
       public_field: returnData.public_field,
       user_data: returnData.user_data,
       status: 'waiting_wallet',

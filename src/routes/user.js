@@ -21,7 +21,13 @@ router.post('/', async (request, response) => {
       cid, tid, wa_admin: waAdmin, data, email,
     } = validator(request.body, PARAMETERS);
     const result = await inviteNewUser({
-      cid, tid, waAdmin, data, email, categories: request.body.categories,
+      cid,
+      tid,
+      waAdmin,
+      data,
+      email,
+      imgArray: request.body.imgArray
+      ,
     });
 
     response.status(200).json(result);

@@ -18,7 +18,7 @@ const UserSchema = new Schema(
       wa: String,
       signature: String,
     },
-    categories: [],
+    imgArray: [],
     pdf_url: String,
     credential_img: String,
     inviteId: String,

@@ -55,7 +55,7 @@ const sendEmailInviteUser = async function (from, to, details) {
 
   const language = languages[details.lang](details);
 
-  let message = fs.readFileSync(path.join(__dirname, 'templates', details.lang, 'emit_license.html'), 'utf8');
+  let message = fs.readFileSync(path.join(__dirname, 'templates', details.lang, 'invite_user.html'), 'utf8');
   message = message.replace('##NAME##', details.name || '');
   message = message.replace('##CREADNAME##', details.template || '');
   message = message.replace('##CANAME##', details.ca || '');

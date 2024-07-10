@@ -5,8 +5,8 @@ stages:
 
 variables:
   TAG: $CI_PIPELINE_ID
-  FILES_PATH: /mnt/build-images/k8s/protocol/service-manager-portal
-  FILES_PATH_DEMO: /mnt/build-images/k8s/protocol/service-manager-portal/demo-build
+  FILES_PATH: /mnt/build-images/k8s/protocol/eidcmp-portal
+  FILES_PATH_DEMO: /mnt/build-images/k8s/protocol/eidcmp-portal/demo-build
 
 test:
   stage: test

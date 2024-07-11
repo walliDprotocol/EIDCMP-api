@@ -14,7 +14,7 @@ test:
   only:
   - demo
   tags:
-  - dca-portal
+  - eidcmp-portal
   - docker image
   script:
   - echo "Running test - will create docker for website (demo branch)"
@@ -27,7 +27,7 @@ build:
   only:
   - master
   tags:
-  - dca-portal
+  - eidcmp-portal
   - docker image
   script:
   - $FILES_PATH/build-images.sh
@@ -39,7 +39,7 @@ deploy:
   - master
   when: manual
   tags:
-  - dca-portal
+  - eidcmp-portal
   - docker image
   script:
   - $FILES_PATH/deploy-image.sh

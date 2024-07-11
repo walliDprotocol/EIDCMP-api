@@ -181,7 +181,8 @@ const inviteNewUser = async (input) => {
       const emailNameKey = Object.keys(createUser.user_data).find((key) => ['nome', 'name', 'nombre'].includes(key.toLowerCase())) || '';
 
       await sendEmailInviteUser(from, input.email, {
-        link: clickableLink,
+        // FIXME: change clickableLink, for we will use the photo
+        link: createUser.imgArray?.[0], // clickableLink,
         template: template.name,
         ca: ca.name,
         name: createUser.user_data[emailNameKey],

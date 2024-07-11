@@ -24,10 +24,10 @@ const getConfig = (env: { [key: string]: string }, argv: { [key: string]: string
       }),
       new CopyWebpackPlugin({
         patterns: [
-          // {
-          //   from: path.resolve(__dirname, 'webapp'),
-          //   to: path.resolve(__dirname, 'build', 'webapp'),
-          // },
+          {
+            from: path.resolve(__dirname, 'webapp'),
+            to: path.resolve(__dirname, 'build', 'webapp'),
+          },
           {
             from: path.resolve(__dirname, 'src', 'templates'),
             to: path.resolve(__dirname, 'build', 'templates'),

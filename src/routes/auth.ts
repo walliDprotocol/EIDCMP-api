@@ -4,7 +4,7 @@ import { issueTokenForUser, loginUser, userProfile } from 'src/services/auth';
 import config from 'src/config';
 import passport from 'passport';
 
-const { ALLOW_REGISTER } = config;
+const { ALLOW_REGISTER, GOOGLE_CALLBACK_URL } = config;
 
 const { registerUser } = require('src/services/auth');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:auth');
@@ -63,7 +63,7 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
   // Send token to client
   logDebug(token);
 
-  res.redirect(`http://127.0.0.1:8080/authenticate/${token}`);
+  res.redirect(`${GOOGLE_CALLBACK_URL}${token}`);
 });
 
 router.get('/google/login', passport.authenticate('google', { scope: ['profile', 'email'] }));

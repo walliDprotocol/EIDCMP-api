@@ -11,6 +11,10 @@ const QRCode = require('qrcode');
 
 const { sendEmailInviteUser } = require('src/services/mailer');
 
+function generateLink({ assetId }) {
+  return `${config.USER_INVITE}/${assetId}`;
+}
+
 const verifyByType = (type, value) => {
   if (type === 'date') {
     return (new Date(value) !== 'Invalid Date') && !Number.isNaN(new Date(value));
@@ -108,7 +112,6 @@ const inviteNewUser = async (input) => {
   logDebug(' ********* Store New User ***********');
 
   const from = config.EMAIL_SENDER || 'WalliD - Credentials <credentials@wallid.io>';
-  let clickableLink = config.USER_INVITE;
 
   try {
     // load CA and Template
@@ -162,7 +165,7 @@ const inviteNewUser = async (input) => {
     });
     logDebug('InviteId', inviteId);
 
-    clickableLink += inviteId._id;
+    const clickableLink = generateLink({ assetId: inviteData.user_id });
 
     // base64 images don't work, using gridfs to store images
     const qrCodeBuffer = await QRCode.toBuffer(`${inviteId._id}`, { type: 'png' });
@@ -182,7 +185,7 @@ const inviteNewUser = async (input) => {
 
       await sendEmailInviteUser(from, input.email, {
         // FIXME: change clickableLink, for we will use the photo
-        link: createUser.imgArray?.[0], // clickableLink,
+        link: clickableLink,
         template: template.name,
         ca: ca.name,
         name: createUser.user_data[emailNameKey],

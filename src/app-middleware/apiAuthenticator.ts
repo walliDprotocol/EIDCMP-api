@@ -25,6 +25,7 @@ const authRoutesException = [
   '/api/v1/ftp',
   '/api/v1/infractions',
   '/api/v1/user',
+  '/api/v1/assets/backgrounds',
 
 ];
 

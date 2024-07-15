@@ -32,6 +32,10 @@ const getConfig = (env: { [key: string]: string }, argv: { [key: string]: string
             from: path.resolve(__dirname, 'src', 'templates'),
             to: path.resolve(__dirname, 'build', 'templates'),
           },
+          {
+            from: path.resolve(__dirname, 'assets'),
+            to: path.resolve(__dirname, 'build', 'assets'),
+          },
         ],
       }),
     ],
@@ -47,9 +51,9 @@ const getConfig = (env: { [key: string]: string }, argv: { [key: string]: string
         {
           test: /\.(png|svg|jpg|jpeg|gif)$/i,
           type: 'asset/resource',
-          include: path.resolve(__dirname, 'src', 'assets', 'characters'),
+          include: path.resolve(__dirname, 'src', 'assets', 'backgrounds'),
           generator: {
-            filename: 'assets/characters/[name][ext]', // specify the folder for assets
+            filename: 'assets/backgrounds/[name][ext]', // specify the folder for assets
           },
         },
       ],

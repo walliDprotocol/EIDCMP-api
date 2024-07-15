@@ -201,12 +201,12 @@ const revokeUser = async (data) => {
     const updateUser = await DB.findOneAndUpdate(DataBaseSchemas.USER, { _id: data.id, tid: data.tid }, updateBody, { new: true });
 
     // send email warning user of revocation
-    const emailName = user.user_data.name || user.user_data.Name || user.user_data.nome || user.user_data.Nome || '';
-    await sendEmailNotifyRevoke(from, user.email, {
-      template: template.name, ca: ca.name, name: emailName, lang: template.lang,
-    });
+    // const emailName = user.user_data.name || user.user_data.Name || user.user_data.nome || user.user_data.Nome || '';
+    // await sendEmailNotifyRevoke(from, user.email, {
+    //   template: template.name, ca: ca.name, name: emailName, lang: template.lang,
+    // });
 
-    return { data: updateUser };
+    return { ...updateUser };
   } catch (ex) {
     logError('*************  error revoke ################');
     throw ex;

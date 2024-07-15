@@ -11,7 +11,7 @@ const AdminServices = require('src/services/admin');
 
 const { importExcelData } = require('src/services/utils');
 
-const REVOKE_PARAMETERS = ['id', 'wa_admin', 'tid', 'revoke_sig'];
+const REVOKE_PARAMETERS = ['id', 'waAdmin', 'tid'];
 const IMPORT_FILE = ['cid', 'tid', 'wa_admin', 'import_data'];
 const ACCEPT_PARAMETERS = ['invite_id', 'wa'];
 const PROFILE_PARAMETERS = ['wa'];
@@ -40,10 +40,10 @@ router.post('/revoke', async (request, response) => {
 
   try {
     const {
-      id, wa_admin: waAdmin, tid, revoke_sig: revokeSig,
+      id, waAdmin, tid,
     } = validator(request.body, REVOKE_PARAMETERS);
     const result = await AdminServices.revokeUser({
-      waAdmin, id, tid, revokeSig,
+      waAdmin, id, tid,
     });
     response.status(200).json(result);
   } catch (error) {

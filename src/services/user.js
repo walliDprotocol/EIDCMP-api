@@ -165,7 +165,7 @@ const inviteNewUser = async (input) => {
     });
     logDebug('InviteId', inviteId);
 
-    const clickableLink = generateLink({ assetId: inviteData.user_id });
+    // const clickableLink = generateLink({ assetId: inviteData.user_id });
 
     // base64 images don't work, using gridfs to store images
     const qrCodeBuffer = await QRCode.toBuffer(`${inviteId._id}`, { type: 'png' });
@@ -174,7 +174,7 @@ const inviteNewUser = async (input) => {
     logDebug('qrCode url', qrCode);
 
     logDebug('Invite Data ', inviteData);
-    logDebug('Link', clickableLink);
+    // logDebug('Link', clickableLink);
     logDebug('template', template);
     logDebug('ca', ca);
 
@@ -185,7 +185,7 @@ const inviteNewUser = async (input) => {
 
       await sendEmailInviteUser(from, input.email, {
         // FIXME: change clickableLink, for we will use the photo
-        link: clickableLink,
+        link: createUser.imgArray?.[0], // clickableLink,
         template: template.name,
         ca: ca.name,
         name: createUser.user_data[emailNameKey],

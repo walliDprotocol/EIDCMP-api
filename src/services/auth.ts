@@ -2,7 +2,7 @@ import { verifyJWT } from 'src/lib/jwt';
 
 import { DB } from 'src/database';
 import { filterObject } from 'src/lib/util';
-import { DataBaseSchemas } from 'src/types/enums';
+import { DataBaseSchemas, OAuthTypes } from 'src/types/enums';
 import * as crypto from 'crypto';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('service:auth');
@@ -16,6 +16,18 @@ function generateKey(size = 32, format = 'base64' as BufferEncoding) {
   return buffer.toString(format);
 }
 
+const billingEntryBody = ({ email, walletAddress } : { email : string, walletAddress: string }) => {
+  return {
+    create_dca: 2,
+    revoke_user: 10,
+    update_governance: 1,
+    revoke_template: 2,
+    create_template: 2,
+    owner_email: email,
+    owner_wallet: walletAddress,
+  };
+};
+
 export const issueTokenForUser = (userDetails: any) => {
   // Issues token
   return issueJWT(userDetails.id, userDetails, '24h');
@@ -25,16 +37,43 @@ export const registerUser = async (data: any) => {
   logDebug('********* registerUser **********', data);
   try {
     const savedUser = await DB.findOne(DataBaseSchemas.AUTH, {
-      $or: [{ email: data.email }, { username: data.username }],
+      $or: [{ email: { $regex: new RegExp(`^${data.email}$`, 'i') } }, { username: { $regex: new RegExp(`^${data.username}$`, 'i') } }],
     });
     // if user does not exist, create user and account data
     if (!savedUser) {
-      const passwordHash = bcrypt.hashSync(data.password, bcrypt.genSaltSync(10), null);
+      const passwordHash = [OAuthTypes.GOOGLE].includes(data.type)
+        ? null : bcrypt.hashSync(data.password, bcrypt.genSaltSync(10), null);
       const walletAddress = `0x${generateKey(20, 'hex')}`;
       const newUser = await DB.create(DataBaseSchemas.AUTH, {
         ...data, password: passwordHash, walletAddress, type: 'local',
       });
-      logDebug('Created user', newUser.toJSON());
+      logDebug('Created user', newUser.toJSON(), newUser);
+
+      // Create entry in Billing table
+      const billingEntry = await DB.findOneAndUpdate(
+        DataBaseSchemas.BILLING,
+        { owner_email: data.email },
+        billingEntryBody({ email: data.email, walletAddress }),
+        { upsert: true, new: true },
+      );
+      logDebug('Created billing entry', billingEntry.toJSON());
+
+      // Create entry in Admin table
+      const admin = {
+        wa: walletAddress,
+        email: data.email,
+        username: data.username,
+      };
+      logDebug('admin', admin);
+      const adminEntry = await DB.findOneAndUpdate(
+        DataBaseSchemas.ADMIN,
+        { wa: walletAddress, email: data.email },
+        admin,
+        { upsert: true, new: true },
+      );
+
+      logDebug('Created admin entry', adminEntry.toJSON());
+
       return newUser;
     }
     throw new Error('User already exists');

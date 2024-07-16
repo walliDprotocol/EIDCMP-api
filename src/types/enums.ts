@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-shadow
+/* eslint-disable no-shadow */
 export enum DataBaseSchemas {
   BILLING = 'billing',
   TOKEN = 'token',
@@ -14,4 +14,10 @@ export enum DataBaseSchemas {
   INFRACTIONS = 'infractions',
   OAUTH = 'oauth',
 }
+
+export enum OAuthTypes {
+  GOOGLE = 'GoogleOAuth',
+  FACEBOOK = 'FacebookOAuth',
+}
+
 export const a = 1;

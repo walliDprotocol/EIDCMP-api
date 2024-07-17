@@ -17,7 +17,7 @@ test:
   - eidcmp-portal
   - docker image
   script:
-  - echo "Running test - will create docker for website (demo branch) $FILES_PATH_DEMO"
+  - echo "Running test - will create docker for website (demo branch) " $FILES_PATH_DEMO
   - $FILES_PATH_DEMO/build-images.sh
 
 

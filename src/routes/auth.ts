@@ -63,7 +63,7 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
   // Send token to client
   logDebug(token);
 
-  res.redirect(`${GOOGLE_CALLBACK_URL}${token}`);
+  res.redirect(`http://localhost:8080/authenticate/${token}`);
 });
 
 router.get('/google/login', passport.authenticate('google', { scope: ['profile', 'email'] }));

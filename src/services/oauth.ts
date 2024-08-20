@@ -20,14 +20,13 @@ const handleUserLogin = async ({
 
     logDebug('User found', user);
     if (!user) {
-      // create a new admin
-
       const newUserRegister = await registerUser({
         username: profile.displayName,
         email: profile.emails[0].value,
-        password: 'password',
         type: 'GoogleOAuth',
       });
+
+      // TODO: maybe we should automatically create the invite id
 
       const newUser = await DB.create(DataBaseSchemas.OAUTH, {
         providerId: profile.id,

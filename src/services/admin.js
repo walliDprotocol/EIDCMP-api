@@ -254,12 +254,23 @@ const caBillingStatus = async (ca_id, leftTemplates, leftCredentials) => {
 
 const getAdminProfile = async (wa) => {
   let admin = await DB.findOne(DataBaseSchemas.ADMIN, { wa }, '-_id -createdAt -updatedAt');
+
+  if (!admin) {
+    return null;
+  }
+
   const dca = await DB.findOne(DataBaseSchemas.CA, { creatorWA: wa }, ' -createdAt -updatedAt');
 
   logDebug('Admin found ', admin);
   logDebug('dca found ', dca);
 
   const billing = { balances: [], no_dca: false };
+
+  if (!dca) {
+    logDebug('No dca found for admin ', wa);
+    return admin;
+  }
+
   if (dca.contract_address === '0x99999999') {
     logDebug('Find billing profile wa', wa);
 

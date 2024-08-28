@@ -12,7 +12,7 @@ const createTemplate = async (data) => {
       name: data.name,
       creatorWa: data.wa,
       lang: data.lang,
-      frontend_props: data.frontend_props || {},
+      frontendProps: data.frontendProps || {},
       admin: [data.wa],
     };
 

@@ -6,7 +6,7 @@ const validator = require('src/core-services/parameterValidator');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:template');
 
 const router = new express.Router();
-const PARAMETERS = ['cid', 'name', 'wa'];
+const PARAMETERS = ['cid', 'name', 'wa', 'frontendProps', 'frontendProps.components', 'frontendProps.currentLayout', 'frontendProps.backgroundFront'];
 
 router.post('/', async (request: Request, response: Response) => {
   logDebug('  ***  create template  ***  ');

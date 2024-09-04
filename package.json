@@ -1,5 +1,5 @@
 {
-  "name": "sm-api-gateway",
+  "name": "eidcmp-api-gateway",
   "version": "1.0.0",
   "description": "API gateway to control dca",
   "main": "./src/index.ts",
@@ -17,7 +17,7 @@
     "lint:fix": "eslint . --fix"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "files": [
     "dist/**/*"

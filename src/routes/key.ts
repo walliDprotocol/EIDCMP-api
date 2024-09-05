@@ -35,13 +35,11 @@ router.post('/create', async (req, res) => {
 
   });
 
-  const { issuerKey } = await response.json();
+  const { issuerKey, issuerDid } = await response.json();
   logDebug('issuerKey', issuerKey);
   KeyPair.add(issuerKey);
 
-  app.locals.issuerKey = issuerKey;
-
-  res.status(200).json(issuerKey);
+  res.status(200).json({ issuerKey, issuerDid });
 });
 
 router.delete('deactivate', async (req, res) => {

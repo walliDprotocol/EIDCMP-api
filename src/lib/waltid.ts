@@ -27,17 +27,17 @@ async function createKeyPair() {
     },
     body: JSON.stringify(body),
 
-  });
+  }).then((data) => data.json());
 
-  const { issuerKey } = await response.json();
-  logDebug('issuerKey', issuerKey);
+  logDebug('response', response);
 
-  return issuerKey;
+  return response;
 }
 
 export async function initializeWallet(app : Express) {
-  const issuerKeyPair = await createKeyPair();
+  logDebug('initializeWallet');
+  const keyPair = await createKeyPair();
   const { locals } = app;
 
-  locals.issuerKey = issuerKeyPair;
+  locals.WaltIdConfig = { ...keyPair };
 }

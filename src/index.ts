@@ -7,12 +7,16 @@ import config from './config';
 
 const { PORT } = config;
 
-const { logDebug } = require('src/core-services/logFunctionFactory').getLogger('app');
+const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('app');
 
 const app = express();
 
 async function startServer() {
-  await initializeWallet(app);
+  try {
+    await initializeWallet(app);
+  } catch (error) {
+    logError('Error initializing wallet', error);
+  }
 
   app.use(middlewareFactory(config));
 

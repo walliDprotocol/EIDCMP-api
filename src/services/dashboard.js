@@ -86,7 +86,7 @@ const getDashboard = async (wa) => {
         name: elem.name,
         tid: elem._id.toHexString(),
         cid: caItem.cid,
-        frontend_props: elem.frontend_props,
+        frontendProps: elem.frontendProps,
         excelTemplate: elem.excelTemplate || 'NA',
         templateItens,
         users: templateUsersByStatus,

@@ -2,7 +2,7 @@ const { uploadFile } = require('src/services/ftp');
 
 const { DataBaseSchemas } = require('src/types/enums');
 
-const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:user');
+const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('service:user');
 
 const { DB } = require('src/database');
 const config = require('src/config').default;
@@ -257,9 +257,9 @@ const inviteNewUser = async (input) => {
 
 const getUserById = async (input) => {
   try {
-    logDebug('********** GetUserById 2 *********** ', input.user_id);
+    logDebug('********** GetUserById 2 *********** ', input.userId);
 
-    const user = await DB.findOne(DataBaseSchemas.USER, { _id: input.user_id }, null, null);
+    const user = await DB.findOne(DataBaseSchemas.USER, { _id: input.userId }, null, null);
 
     logDebug('USers :  ', user);
     if (!user) {
@@ -289,7 +289,7 @@ const getUserById = async (input) => {
         ca_name: ca.name,
         template_name: template.name,
         img_url: ca.img_url,
-        frontend_props: template.frontend_props,
+        frontendProps: template.frontendProps,
         template_itens: await listTemplateItens(user.tid),
         userInfractions,
 
@@ -303,35 +303,28 @@ const getUserById = async (input) => {
 
 const getUserByInvite = async (input) => {
   try {
-    logDebug('********** Get User By Invite  ***********');
+    logDebug('********** Get User By Invite  ***********', input);
 
-    const invite = await DB.findOne(DataBaseSchemas.PENDING_INVITES, { _id: input.inviteId }, '', null);
+    const invite = await DB.findOne(DataBaseSchemas.PENDING_INVITES, { _id: input.inviteId });
     if (!invite) {
-      throw new Error(`There is no invite for this iD${input.inviteId}`);
+      throw new Error(`There is no invite for this iD ${input.inviteId}`);
     }
 
-    if (!invite.data && invite.data.user_id && invite.data.tid) {
-      throw new Error('This is not a user invite');
-    }
-
-    const user = await DB.findOne(DataBaseSchemas.USER, { _id: invite.data.user_id }, '', null);
+    const user = await DB.findOne(DataBaseSchemas.USER, { _id: invite.data.userId }, '', null);
     if (!user) {
       throw new Error('There is no user for these invite ID');
     }
     // load CA and Template
     const template = await DB.findOne(DataBaseSchemas.TEMPLATE, { _id: user.tid }, null, null);
     const ca = await DB.findOne(DataBaseSchemas.CA, { _id: user.cid }, null, null);
-    const userInfractions = await DB.findOne(DataBaseSchemas.USER_INFRACTIONS, { _id: user.userInfractionsId }, null, null);
-    logDebug('User Infractions :  ', userInfractions);
     return {
       data: {
         ...user.toObject(),
         ca_name: ca.name,
         template_name: template.name,
         img_url: ca.img_url,
-        frontend_props: template.frontend_props,
+        frontendProps: template.frontendProps,
         template_itens: await listTemplateItens(invite.data.tid),
-        userInfractions,
       },
     };
   } catch (ex) {

@@ -43,7 +43,6 @@ router.get('/', async (request, response) => {
   logDebug('  **** RT:GetUserByInvite *****  ', request.query);
 
   try {
-    // const { inviteId, user_id  } = validator(request.query, GETUSER_PARAMS)
     const inviteId = request.query.inviteId || null;
     let result = {};
 
@@ -51,7 +50,7 @@ router.get('/', async (request, response) => {
       logDebug('invite id ', request.query.inviteId);
       result = await getUserByInvite(request.query);
     } else {
-      logDebug('User  id ', request.query.user_id);
+      logDebug('User  id ', request.query.userId);
       result = await getUserById(request.query);
     }
 

@@ -154,7 +154,6 @@ const listTemplateItens = async (tid) => {
       // throw 'There no template itens for this template';
       output = [];
     }
-    // console.log('Find Template Itens ',output );
 
     return output;
   } catch (ex) {

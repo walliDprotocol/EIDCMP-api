@@ -8,7 +8,7 @@ const router = new express.Router();
 const validator = require('src/core-services/parameterValidator');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:user');
 
-const PARAMETERS = ['cid', 'tid', 'wa_admin', 'email', 'data'];
+const PARAMETERS = ['cid', 'tid', 'waAdmin', 'email', 'data'];
 
 /**
  * Create User
@@ -18,7 +18,7 @@ router.post('/', async (request, response) => {
 
   try {
     const {
-      cid, tid, wa_admin: waAdmin, data, email,
+      cid, tid, waAdmin, data, email,
     } = validator(request.body, PARAMETERS);
     const result = await inviteNewUser({
       cid,

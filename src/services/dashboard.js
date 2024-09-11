@@ -20,7 +20,6 @@ const listCAbyAdmin = async (wa) => {
       output = { _id: '' };
       // throw 'There is no CA for that user!';
     }
-    logDebug('output ', output);
     return output;
   } catch (ex) {
     logError('Error listing CA');

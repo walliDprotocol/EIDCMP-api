@@ -12,7 +12,7 @@ const AdminServices = require('src/services/admin');
 const { importExcelData } = require('src/services/utils');
 
 const REVOKE_PARAMETERS = ['id', 'waAdmin', 'tid'];
-const IMPORT_FILE = ['cid', 'tid', 'wa_admin', 'import_data'];
+const IMPORT_FILE = ['cid', 'tid', 'waAdmin', 'import_data'];
 const ACCEPT_PARAMETERS = ['invite_id', 'wa'];
 const PROFILE_PARAMETERS = ['wa'];
 

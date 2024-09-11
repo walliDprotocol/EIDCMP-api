@@ -25,7 +25,7 @@ const TemplateSchema = new Schema(
     // info stored in chain
     template_chain: {
       sig: [],
-      wa_admin: String,
+      waAdmin: String,
     },
     status: {
       type: String,

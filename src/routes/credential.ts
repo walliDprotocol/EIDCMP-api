@@ -3,7 +3,7 @@ import validator from 'src/core-services/parameterValidator';
 import { createNewUser } from 'src/services/user';
 import { createCredentialOfferUrl } from 'src/services/credential';
 import { sendEmailInviteUser } from 'src/services/mailer';
-import { NewUser } from 'src/types';
+import { UserCredentialType } from 'src/types';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:credential');
 
@@ -27,7 +27,7 @@ router.post('/create', async (req, res) => {
       cid, tid, waAdmin, data, email,
     } = validator(req.body, PARAMETERS);
 
-    const { newUser, credencialIssuerDetails } : { newUser: NewUser, credencialIssuerDetails: any } = await createNewUser({
+    const { newUser, credencialIssuerDetails } : { newUser: UserCredentialType, credencialIssuerDetails: any } = await createNewUser({
       cid,
       tid,
       data,

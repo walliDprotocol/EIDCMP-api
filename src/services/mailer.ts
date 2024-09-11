@@ -5,7 +5,7 @@ import path from 'path';
 import qrcode from 'qrcode';
 import sgMail, { MailDataRequired } from '@sendgrid/mail';
 import config from 'src/config';
-import { NewUser } from 'src/types';
+import { UserCredentialType } from 'src/types';
 import { DataBaseSchemas } from 'src/types/enums';
 import { DB } from 'src/database';
 import { uploadFile } from 'src/services/ftp';
@@ -73,14 +73,14 @@ export const sendAdminInvite = async function (from: string, to: string, details
   return Promise.resolve(sendMail(from, to, subject, message));
 };
 
-export const sendEmailInviteUser = async function (newUser:NewUser & { email: string }, credencialIssuerDetails: CredencialIssuerDetails) {
+export const sendEmailInviteUser = async function (newUser:UserCredentialType & { email: string }, credencialIssuerDetails: CredencialIssuerDetails) {
   const from = EMAIL_SENDER || 'WalliD - Credentials <credentials@wallid.io>';
 
   const inviteData = {
     userId: newUser.id,
     tid: newUser.tid.trim(),
     cid: newUser.cid.trim(),
-    wa_admin: credencialIssuerDetails.waAdmin.trim(),
+    waAdmin: credencialIssuerDetails.waAdmin.trim(),
   };
     // save invite in table:
   const inviteId = await DB.create(DataBaseSchemas.PENDING_INVITES, {

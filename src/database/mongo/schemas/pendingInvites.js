@@ -17,7 +17,7 @@ const PendingInviteSchema = new Schema(
     // ca_photo : String,
     // tid : String,
     // cid : String
-    // wa_admin : String
+    // waAdmin : String
     },
     status: {
       type: String,

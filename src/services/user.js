@@ -205,7 +205,7 @@ const inviteNewUser = async (input) => {
       tid: input.tid.trim(),
       cid: input.cid.trim(),
       ca_photo: ca.img_url,
-      wa_admin: input.waAdmin.trim(),
+      waAdmin: input.waAdmin.trim(),
     };
     // save invite in table:
     const inviteId = await DB.create(DataBaseSchemas.PENDING_INVITES, {

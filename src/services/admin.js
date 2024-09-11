@@ -128,13 +128,13 @@ const prepareImportData = async (templateItens, userData, tid, table_values) => 
 };
 
 /**
- *  1. Check if wa_admin is wallet admin
+ *  1. Check if waAdmin is wallet admin
  *  2. Import data
  *
  */
 const importMultiData = async (input) => {
   logDebug('Import multi Data :  ', input);
-  // TODO check if the wa_admin is admin
+  // TODO check if the waAdmin is admin
   // loop to import dada call indivually the newinvite data
   const templateItens = await listTemplateItens(input.tid);
   logDebug('Email number #', input.import_data.length);
@@ -150,7 +150,7 @@ const importMultiData = async (input) => {
           tid: input.tid,
           cid: input.cid,
           imgArray: elem.imgArray,
-          wa_admin: input.wa_admin,
+          waAdmin: input.waAdmin,
           email,
           data: userData,
         },
@@ -264,9 +264,6 @@ const getAdminProfile = async (wa) => {
 
   const dca = await DB.findOne(DataBaseSchemas.CA, { creatorWA: wa }, ' -createdAt -updatedAt');
 
-  logDebug('Admin found ', admin);
-  logDebug('dca found ', dca);
-
   const billing = { balances: [], no_dca: false };
 
   if (!dca) {
@@ -275,10 +272,7 @@ const getAdminProfile = async (wa) => {
   }
 
   if (dca.contract_address === '0x99999999') {
-    logDebug('Find billing profile wa', wa);
-
     const balances = await DB.findOne(DataBaseSchemas.BILLING, { owner_wallet: wa }, '-_id -owner_email -owner_wallet');
-    logDebug('balances found ', balances);
     billing.balances.push({
       address: dca.contract_address,
       balances: await caBillingStatus(dca._id.toHexString(), balances.create_template, balances.revoke_user),
@@ -292,7 +286,6 @@ const getAdminProfile = async (wa) => {
     admin.no_dca = billing.no_dca;
   }
 
-  logDebug('will return admin ', admin);
   return admin;
 };
 

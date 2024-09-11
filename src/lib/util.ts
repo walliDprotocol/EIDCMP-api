@@ -21,3 +21,7 @@ export function filterObject(raw: Record<string, unknown>, allowed: string[]) {
       return obj;
     }, {});
 }
+
+export function isEmptyObject(obj: Record<string, unknown> = {}): boolean {
+  return Object.keys(obj).length === 0 && obj.constructor === Object;
+}

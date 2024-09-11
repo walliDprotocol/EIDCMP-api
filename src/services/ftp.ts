@@ -8,7 +8,7 @@ const { GridFSBucket } = mongo;
 
 const { DOMAIN_ENV } = config;
 
-export async function uploadFile(filename: string, file?: Express.Multer.File) {
+export async function uploadFile(filename: string, file?: Express.Multer.File | { buffer: Buffer }) : Promise<{ message: string; id: string; url: string; }> {
   return new Promise((resolve, reject) => {
     logDebug('filename', filename);
 
@@ -35,7 +35,7 @@ export async function uploadFile(filename: string, file?: Express.Multer.File) {
       logDebug('File uploaded successfully');
       resolve({
         message: `File uploaded successfully, stored under Mongo ObjectID: ${id}`,
-        id,
+        id: id.toString(),
         url: `${DOMAIN_ENV}/ftp/${id}`,
       });
     });

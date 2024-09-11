@@ -10,7 +10,10 @@ const { inviteNewUser } = require('src/services/user');
 const { listTemplateItens } = require('src/services/templateItem');
 const { randomCode } = require('src/services/utils');
 
-const { sendEmailNotifyRevoke, inviteEmailForDemo } = require('src/services/mailer');
+const {
+  //  sendEmailNotifyRevoke,
+  inviteEmailForDemo,
+} = require('src/services/mailer');
 
 const createDemoInvite = async (input) => {
   logDebug('createDemoInvite :  ', input);
@@ -58,8 +61,8 @@ const createDemoInvite = async (input) => {
   return { code: 200, mgs: (`email have been send with sucess ${clickableLink}`) };
 };
 
-const prepareImportData = async (templateItens, user_data, tid, table_values) => {
-  logDebug('*********  prepareImportData ******* ', user_data);
+const prepareImportData = async (templateItens, userData, tid, table_values) => {
+  logDebug('*********  prepareImportData ******* ', userData);
 
   const userDataPrepared = [];
   // Adding Credential ID if template have that item
@@ -79,7 +82,7 @@ const prepareImportData = async (templateItens, user_data, tid, table_values) =>
       if (elem.attrFormat === 'keyval') {
         let containProperty = false;
         let val = '';
-        Object.entries(user_data).forEach(([key, value]) => {
+        Object.entries(userData).forEach(([key, value]) => {
           logDebug('key ', key);
 
           // logDebug(key + ' ' + value); // "a 5", "b 7", "c 9"
@@ -139,7 +142,7 @@ const importMultiData = async (input) => {
   // await
   const result = await Promise.all(
     input.import_data.map(async (elem) => {
-      const userData = await prepareImportData(templateItens, elem.user_data, input.tid, elem.table_values || []);
+      const userData = await prepareImportData(templateItens, elem.userData, input.tid, elem.table_values || []);
       const email = elem.email || elem.Email || elem['e-mail'];
 
       await inviteNewUser(
@@ -165,7 +168,7 @@ const validateParseFile = async (elements, tid) => {
   logDebug(' *** validateParseFile *** | Number of parsed element #', elements.length);
   const templateItens = await listTemplateItens(tid);
   const result = await Promise.all(
-    elements.map(async (elem) => prepareImportData(templateItens, elem.user_data, tid, elem.table_values || [])),
+    elements.map(async (elem) => prepareImportData(templateItens, elem.userData, tid, elem.table_values || [])),
   );
   return result;
 };
@@ -201,7 +204,7 @@ const revokeUser = async (data) => {
     const updateUser = await DB.findOneAndUpdate(DataBaseSchemas.USER, { _id: data.id, tid: data.tid }, updateBody, { new: true });
 
     // send email warning user of revocation
-    // const emailName = user.user_data.name || user.user_data.Name || user.user_data.nome || user.user_data.Nome || '';
+    // const emailName = user.userData.name || user.userData.Name || user.userData.nome || user.userData.Nome || '';
     // await sendEmailNotifyRevoke(from, user.email, {
     //   template: template.name, ca: ca.name, name: emailName, lang: template.lang,
     // });
@@ -254,12 +257,23 @@ const caBillingStatus = async (ca_id, leftTemplates, leftCredentials) => {
 
 const getAdminProfile = async (wa) => {
   let admin = await DB.findOne(DataBaseSchemas.ADMIN, { wa }, '-_id -createdAt -updatedAt');
+
+  if (!admin) {
+    return null;
+  }
+
   const dca = await DB.findOne(DataBaseSchemas.CA, { creatorWA: wa }, ' -createdAt -updatedAt');
 
   logDebug('Admin found ', admin);
   logDebug('dca found ', dca);
 
   const billing = { balances: [], no_dca: false };
+
+  if (!dca) {
+    logDebug('No dca found for admin ', wa);
+    return admin;
+  }
+
   if (dca.contract_address === '0x99999999') {
     logDebug('Find billing profile wa', wa);
 

@@ -62,7 +62,7 @@ const listUsersTaggedByStatus = async (input) => {
     const result = await DB.find(DataBaseSchemas.USER, { tid: input.tid }, '', null);
     await Promise.all(result.map(async (obj) => {
       finalUsers.push(({
-        user_data: obj.user_data,
+        userData: obj.userData,
         public_field: obj.public_field,
         status: obj.status,
         wa: obj.wa,

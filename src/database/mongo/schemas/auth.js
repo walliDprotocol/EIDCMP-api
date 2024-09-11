@@ -9,7 +9,7 @@ const AuthSchema = new Schema(
     email: String,
     password: String,
     photo: String,
-    user_data: String,
+    userData: String,
     walletAddress: String,
     organization: { type: Schema.Types.ObjectId, ref: 'organization' },
     type: {

@@ -1,11 +1,11 @@
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 
-const express = require('express');
-const { createTemplate, getTemplate } = require('src/services/template');
+const { createTemplate, getTemplate, deleteTemplate } = require('src/services/template');
 const validator = require('src/core-services/parameterValidator');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:template');
 
-const router = new express.Router();
+const router = express.Router();
+
 const PARAMETERS = ['cid', 'name', 'wa', 'frontendProps', 'frontendProps.components', 'frontendProps.currentLayout', 'frontendProps.backgroundFront'];
 
 router.post('/', async (request: Request, response: Response) => {
@@ -37,6 +37,43 @@ router.get('/', async (request: Request, response: Response) => {
     const result = await getTemplate(request.query);
 
     response.status(200).json(result);
+  } catch (error: any) {
+    logError('router:create template ', error);
+
+    response.status(error.code || 500)
+      .json({ data: null, message: error.message || 'Internal server error' });
+  }
+});
+
+router.delete('/', async (request: Request, response: Response) => {
+  logDebug('  ** delete template **  ', request.query);
+
+  try {
+    let tids = request.query.tid as string[] | string;
+
+    if (typeof tids === 'string') {
+      tids = [tids] as string[];
+    }
+
+    const results = await Promise.all(
+      tids?.map(async (tid: string) => {
+        try {
+          await deleteTemplate({ tid });
+          return { tid, success: true };
+        } catch (error) {
+          logError('router:create template ', error);
+          return { tid, success: false };
+        }
+      }),
+    );
+
+    response.status(200).json(
+      {
+        data: null,
+        message: `Template deleted successfully: ${results.filter((result: any) => result.success).map((result: any) => result.tid)}`,
+        failed: results.filter((result: any) => !result.success).map((result: any) => result.tid),
+      },
+    );
   } catch (error: any) {
     logError('router:create template ', error);
 

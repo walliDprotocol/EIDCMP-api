@@ -139,7 +139,7 @@ const createTemplateList = async (data) => {
 };
 
 const listTemplateItens = async (tid) => {
-  logDebug(' ********* list Templates Item ***********', tid);
+  // logDebug(' ********* list Templates Item ***********', tid);
 
   try {
     const criteria = { tid };
@@ -149,7 +149,7 @@ const listTemplateItens = async (tid) => {
       'attr type isPublic _id attrFormat table_attr table_headers isMandatory sigs logos order',
       null,
     );
-    if (!output || !(output.length > 0)) {
+    if (!output || output.length === 0) {
       logError('There no template itens for this template');
       // throw 'There no template itens for this template';
       output = [];

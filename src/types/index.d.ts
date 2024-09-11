@@ -35,7 +35,7 @@ export type CredentialState = {
   PENDING: 'pending',
 };
 
-export type NewUser = {
+export type UserCredentialType = {
   id: string;
   cid: string;
   tid: string;
@@ -45,6 +45,14 @@ export type NewUser = {
   imgArray: string[];
   publicField: string[];
   status: CredentialState;
+};
+
+export type CredentialTemplateType = {
+  cid: string;
+  name: string;
+  wa: string;
+  lang: any;
+  frontendProps: any;
 };
 
 export * from './schemas';

@@ -15,12 +15,12 @@ function generateLink({ assetId }) {
   return `${config.USER_INVITE}/${assetId}`;
 }
 
-const verifyByType = (type, value) => {
-  if (type === 'date') {
+const verifyByType = (inputType, value) => {
+  if (inputType === 'date') {
     return (new Date(value) !== 'Invalid Date') && !Number.isNaN(new Date(value));
-  } if (type === 'text' || type === 'image') {
+  } if (['text', 'string', 'image'].includes(inputType)) { // FIXME: remove 'text' in the future, 'image' should be 'url'?
     return true;
-  } if (type === 'number') {
+  } if (inputType === 'number') {
     const reg = /^\d+$/;
     return reg.test(value);
   }
@@ -32,22 +32,22 @@ const parseTableData = async (templateItem, tableInput) => {
   await Promise.all(tableInput.values.map(async (tableLine) => {
     // loop over template item [table_attr] check columns and types
     templateItem.table_attr.forEach((tItem) => {
-      // tItem.attr/key name | tItem.type=type
+      // tItem.attr/key name | tItem.inputType=inputType
       const lineVal = tableLine[tItem.attr.toLowerCase()];
       // if lineVale isnt null means that template item attr[the key] is present in table line object. So isnt null
 
       if (lineVal) {
-        // check the type and continues
-        if (!verifyByType(tItem.type.toLowerCase(), lineVal)) {
-          logDebug('Type and Value dont match in table field attr: ', tItem.attr, ' tItem type ', tItem.type, ' val ', lineVal, ' table line ', tableLine);
-          throw new Error(`Type and Value don't match in table field attr: ${tItem.attr}, tItem type: ${tItem.type}, val: ${lineVal}, table line: ${tableLine}`);
+        // check the inputType and continues
+        if (!verifyByType(tItem.inputType.toLowerCase(), lineVal)) {
+          logDebug('Type and Value dont match in table field attr: ', tItem.attr, ' tItem inputType ', tItem.inputType, ' val ', lineVal, ' table line ', tableLine);
+          throw new Error(`Type and Value don't match in table field attr: ${tItem.attr}, tItem inputType: ${tItem.inputType}, val: ${lineVal}, table line: ${tableLine}`);
         }
       } else {
         logDebug('#5353 !!!WARNING!!!! Table Field  ', tItem.attr, ' isnt present at this line table ', tableLine, ' if that field is mandatory your fuckup');
       }
     });
   }));
-  // if there are no mandatory missing or and fault by type its ok tu use table data
+  // if there are no mandatory missing or and fault by inputType its ok tu use table data
 
   // copy headers to userData too
   return { headers: templateItem.table_headers, values: tableInput.values };
@@ -79,13 +79,13 @@ const checkTemplateItensAndDataType = async (templateItens, data) => {
         returnData.userData.tables = await parseTableData(tempElem, elem);
       } else if (tempElem.attrFormat === 'keyval') {
         // logDebug('element on item ', temp_elem );
-        // checking data type
+        // checking data inputType
         if ((tempElem.isMandatory === 'true' || elem.isPublic === true) && !elem.value) {
           throw new Error(`This field must be present attr : ${tempElem.attr.toString()} value : ${elem.value.toString()} mandatory ${tempElem.isMandatory}`);
         }
 
         if (elem.value) {
-          if (verifyByType(tempElem.type, elem.value)) {
+          if (verifyByType(tempElem.inputType, elem.value)) {
             if (elem.isPublic && (elem.isPublic === 'true' || elem.isPublic === true)) {
               returnData.public_field = {
                 attr: tempElem.attr.toString(),
@@ -95,7 +95,7 @@ const checkTemplateItensAndDataType = async (templateItens, data) => {
             returnData.userData[tempElem.attr.toString()] = elem.value.toString();
           } else {
             logError('Type and Value dont match listItem id: ', elem.temp_item_id);
-            throw new Error(`Type and value dont match type :${tempElem.type} value : ${elem.value}`);
+            throw new Error(`Type and value dont match inputType :${tempElem.inputType} value : ${elem.value}`);
           }
         }
       }
@@ -122,7 +122,7 @@ const createNewUser = async (input) => {
       throw new Error(`There is no CA with ID:${input.cid}`);
     }
 
-    // verify if all fields match with templates itens, lenght, type etc
+    // verify if all fields match with templates itens, lenght, inputType etc
     const templateItens = await listTemplateItens(input.tid);
     // logDebug('Data input  ', input.data);
     const returnData = await checkTemplateItensAndDataType(templateItens, input.data);
@@ -173,7 +173,7 @@ const inviteNewUser = async (input) => {
       throw new Error(`There is no CA with ID:${input.cid}`);
     }
 
-    // verify if all fields match with templates itens, lenght, type etc
+    // verify if all fields match with templates itens, length, type etc
     const templateItens = await listTemplateItens(input.tid);
     // logDebug('Data input  ', input.data);
     const returnData = await checkTemplateItensAndDataType(templateItens, input.data);

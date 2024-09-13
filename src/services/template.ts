@@ -19,7 +19,7 @@ export const createTemplate = async (data: CredentialTemplateType) => {
 
     const out = await DB.create(DataBaseSchemas.TEMPLATE, input);
 
-    return out.toObject();
+    return { ...out.toObject(), tid: out._id.toString() };
   } catch (ex) {
     logError('Error createTemplate');
     throw ex;

@@ -5,7 +5,7 @@ const TemplateItemSchema = new Schema(
     tid: String,
     cid: String,
     attr: String,
-    type: String,
+    inputType: String,
     isPublic: String,
     order: {
       type: Number,

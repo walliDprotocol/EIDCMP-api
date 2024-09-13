@@ -109,13 +109,13 @@ const prepareImportData = async (templateItens, userData, tid, table_values) => 
   }
 
   // add table data for template
-  // find type for table get templateItem id and add values supply by input
+  // find item for table get templateItem id and add values supply by input
   if (table_values && table_values.length > 0) {
     // logDebug("Will adding table template ", table_values);
     const tableItem = templateItens.find((elem) => elem.attrFormat.toLowerCase() === 'table');
     if (!tableItem) {
-      logError('There isnt table type in this template ', templateItens);
-      throw new Error('There isnt table type in this template!');
+      logError('There isnt table item in this template ', templateItens);
+      throw new Error('There isnt table item in this template!');
     }
     userDataPrepared.push({
       temp_item_id: tableItem._id,

@@ -13,7 +13,7 @@ const storeTable = async (input) => {
       throw new Error('No headers table');
     }
     if (!input.table_attr) {
-      throw new Error('No type attrs in table');
+      throw new Error('No inputType attrs in table');
     }
 
     const resp = await DB.insertMany(DataBaseSchemas.TEMPLATE_ITEM, input, { returnNewDocument: true });
@@ -80,7 +80,7 @@ const createTemplateList = async (data) => {
       tid: data.tid,
       order: elem.order,
       isPublic: elem.isPublic,
-      type: elem.type.trim(),
+      inputType: elem.inputType.trim(),
       attr: elem.attr.trim(),
       isMandatory: elem.isMandatory,
       attrFormat: 'keyval',
@@ -146,7 +146,7 @@ const listTemplateItens = async (tid) => {
     let output = await DB.find(
       DataBaseSchemas.TEMPLATE_ITEM,
       criteria,
-      'attr type isPublic _id attrFormat table_attr table_headers isMandatory sigs logos order',
+      'attr inputType isPublic _id attrFormat table_attr table_headers isMandatory sigs logos order',
       null,
     );
     if (!output || output.length === 0) {

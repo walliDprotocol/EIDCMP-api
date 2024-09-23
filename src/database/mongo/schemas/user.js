@@ -7,7 +7,7 @@ const UserSchema = new Schema(
     wa: String,
     email: String,
     shaSod: String,
-    user_data: {
+    userData: {
     // keyval .....,
     // tables ,
     // logos,
@@ -40,8 +40,11 @@ const UserSchema = new Schema(
 UserSchema.set('timestamps', true);
 
 // Ensure virtual fields are serialised.
-// UserSchema.set('toJSON', {
-//     virtuals: true
-// });
-
+UserSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString(); // eslint-disable-line no-param-reassign, no-underscore-dangle
+    delete returnedObject._id; // eslint-disable-line no-param-reassign, no-underscore-dangle
+    delete returnedObject.__v; // eslint-disable-line no-param-reassign, no-underscore-dangle
+  },
+});
 module.exports = UserSchema;

@@ -213,7 +213,7 @@ const parseExcelWithTable = function (rows, headerMaps, numberOfColumns) {
       header = elem;
     } else {
       let fieldIndex = 0;
-      const o = { email: '', user_data: {}, table_values: [] };
+      const o = { email: '', userData: {}, table_values: [] };
       let tableInnerLine = 0;
       let tableRow = {};
       elem.forEach((val) => {
@@ -237,7 +237,7 @@ const parseExcelWithTable = function (rows, headerMaps, numberOfColumns) {
 
             // if its 1 its a keyValue
           } else {
-            o.user_data[header[fieldIndex].toLowerCase()] = val;
+            o.userData[header[fieldIndex].toLowerCase()] = val;
           }
         }
         fieldIndex += 1;
@@ -269,12 +269,12 @@ const importExcelData = async function (filePath, tid) {
           header = elem;
         } else {
           let valIdx = 0;
-          const o = { email: '', user_data: {} };
+          const o = { email: '', userData: {} };
           elem.forEach((val) => {
             if (header[valIdx].includes('email')) {
               o.email = val;
             } else {
-              o.user_data[header[valIdx]] = val;
+              o.userData[header[valIdx]] = val;
             }
             valIdx += 1;
           });

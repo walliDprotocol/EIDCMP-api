@@ -1,6 +1,6 @@
 function checkProperty(data, p) {
   if (!data[p] || data[p] === undefined || data[p] == null) {
-    throw new Error(`Missing parameter <${p}>`);
+    throw new Error(`Missing parameter '${p}' `);
   }
 }
 

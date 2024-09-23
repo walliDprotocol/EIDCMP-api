@@ -30,6 +30,11 @@ enum EnvEnum {
   GOOGLE_CLIENT_ID = 'GOOGLE_CLIENT_ID',
   GOOGLE_CLIENT_SECRET = 'GOOGLE_CLIENT_SECRET',
   GOOGLE_CALLBACK_URL = 'GOOGLE_CALLBACK_URL',
+
+  // WaltId
+  WALTID_PUBLIC_VERIFIER = 'WALTID_PUBLIC_VERIFIER',
+  WALTID_PUBLIC_ISSUER = 'WALTID_PUBLIC_ISSUER',
+  WALTID_PUBLIC_WALLET = 'WALTID_PUBLIC_WALLET',
 }
 
 const env = {
@@ -150,6 +155,21 @@ const env = {
     env: 'GOOGLE_CALLBACK_URL',
     type: 'string',
     required: true,
+  },
+  WALTID_PUBLIC_VERIFIER: {
+    env: 'WALTID_PUBLIC_VERIFIER',
+    type: 'string',
+    required: true,
+  },
+  WALTID_PUBLIC_ISSUER: {
+    env: 'WALTID_PUBLIC_ISSUER',
+    type: 'string',
+    required: true,
+  },
+  WALTID_PUBLIC_WALLET: {
+    env: 'WALTID_PUBLIC_WALLET',
+    type: 'string',
+    // required: true,
   },
 } as const;
 

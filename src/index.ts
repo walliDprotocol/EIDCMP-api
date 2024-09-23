@@ -1,16 +1,28 @@
 import express from 'express';
 
+import { initializeWallet } from 'src/lib/waltid';
 import middlewareFactory from './app-middleware/middlewareFactory';
 
 import config from './config';
 
 const { PORT } = config;
 
-const { logDebug } = require('src/core-services/logFunctionFactory').getLogger('app');
+const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('app');
 
 const app = express();
-app.use(middlewareFactory(config));
 
-app.listen(PORT, () => {
-  logDebug(`Server is running on port ${PORT}`);
-});
+async function startServer() {
+  try {
+    await initializeWallet(app);
+  } catch (error) {
+    logError('Error initializing wallet', error);
+  }
+
+  app.use(middlewareFactory(config));
+
+  app.listen(PORT, () => {
+    logDebug(`Server is running on port ${PORT}`);
+  });
+}
+
+startServer();

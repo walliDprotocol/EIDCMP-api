@@ -1,0 +1,221 @@
+/* eslint-disable global-require */
+/* eslint-disable func-names */
+import fs from 'fs';
+import path from 'path';
+import qrcode from 'qrcode';
+import sgMail, { MailDataRequired } from '@sendgrid/mail';
+import config from 'src/config';
+import { UserCredentialType } from 'src/types';
+import { DataBaseSchemas } from 'src/types/enums';
+import { DB } from 'src/database';
+import { uploadFile } from 'src/services/ftp';
+
+const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:mailer');
+
+const { SEND_GRID_API_KEY, EMAIL_SENDER } = config;
+
+const languages: Record<string, any> = {
+  en: require('../templates/en/languages'),
+  pt: require('../templates/pt/languages'),
+  es: require('../templates/es/languages'),
+};
+
+export type SendEmailParams = {
+  from: string;
+  to: string;
+  lang: string;
+  name: string;
+  templateName: string;
+  caName: string;
+};
+
+export type CredencialIssuerDetails = {
+  tid: string;
+  cid: string;
+  waAdmin: string;
+  templateName: string;
+  caName: string;
+  lang: string;
+};
+
+function generateLink({ assetId }: { assetId: string }) {
+  return `${config.USER_INVITE}/${assetId}`;
+}
+
+// console.log('Email & Password ', emailOrigin,  " Pass : ",  emailPassword );
+logDebug('send grid key ', SEND_GRID_API_KEY);
+sgMail.setApiKey(SEND_GRID_API_KEY);
+
+// send grid email
+const sendMail = function (from: string, to: string, subject: string, message: string, cc = []) {
+  const msg: MailDataRequired = {
+    to: [to], // Change to your recipient
+    from, // Change to your verified sender
+    cc,
+    subject,
+    html: message,
+  };
+
+  sgMail
+    .send(msg)
+    .then((m) => {
+      logDebug('Send email with success ', m);
+    })
+    .catch((error) => {
+      logError(error);
+    });
+};
+
+export const sendAdminInvite = async function (from: string, to: string, details: { CA: string; }) {
+  const message = `<p>You have been invited by <b>${from}</b> to become an administrator of ${details.CA}`;
+  const subject = `WalliD: Invite from ${details.CA}`;
+
+  return Promise.resolve(sendMail(from, to, subject, message));
+};
+
+export const sendEmailInviteUser = async function (newUser:UserCredentialType & { email: string }, credencialIssuerDetails: CredencialIssuerDetails) {
+  const from = EMAIL_SENDER || 'WalliD - Credentials <credentials@wallid.io>';
+
+  const inviteData = {
+    userId: newUser.id,
+    tid: newUser.tid.trim(),
+    cid: newUser.cid.trim(),
+    waAdmin: credencialIssuerDetails.waAdmin.trim(),
+  };
+    // save invite in table:
+  const inviteId = await DB.create(DataBaseSchemas.PENDING_INVITES, {
+    from, to: newUser.email, type: 'invite_user', data: inviteData,
+  });
+  logDebug('InviteId', inviteId.toJSON());
+
+  const link = generateLink({ assetId: inviteId._id });
+
+  // base64 images don't work, using gridfs to store images
+  const qrCodeBuffer = await qrcode.toBuffer(`${inviteId._id}`, { type: 'png' });
+
+  const { url: qrCodeImage } = await uploadFile(`qrCode_${inviteId._id}`, { buffer: Buffer.from(new Uint8Array(qrCodeBuffer)) });
+  logDebug('qrCode url', qrCodeImage);
+  logDebug('Invite Data ', inviteData);
+  logDebug('Link', link);
+
+  await setTimeout(() => {}, (Math.floor(Math.random() * 6) + 2) * 1000);
+
+  logDebug('Send sendEmailInviteUser details ', credencialIssuerDetails);
+
+  const language = languages[credencialIssuerDetails.lang]({
+    template: credencialIssuerDetails.templateName,
+    ca: credencialIssuerDetails.caName,
+  });
+
+  const templatePath = path.join(__dirname, 'templates', credencialIssuerDetails.lang, 'invite_user.html');
+  const templateContent = fs.readFileSync(templatePath, 'utf8');
+  const { title, subject } = language.inviteUser;
+  logDebug('Send newUser details ', newUser);
+
+  const emailNameKey = Object.keys(newUser.userData).find((key) => ['nome', 'name', 'nombre'].includes(key.toLowerCase())) || '';
+  const name = newUser.userData[emailNameKey];
+
+  const message = templateContent
+    .replace('##NAME##', name)
+    .replace('##CREADNAME##', credencialIssuerDetails.templateName)
+    .replace('##CANAME##', credencialIssuerDetails.caName)
+    .replace('##CLICK_URL##', link)
+    .replace('##_TITLE_##', title)
+    .replace('##QRCODE##', qrCodeImage);
+
+  // const message = `<p>Your credentical for services <b>${details.template}</b> is ready <br> Please click on link for onboarding <a href='src/{details.link}>Visit WalliD</a>`
+
+  await sendMail(from, newUser.email, subject, message);
+
+  return {
+    data: {
+      mgs: `The invite ${inviteId._id} was sent!`,
+      inviteId: inviteId._id,
+    },
+  };
+};
+
+export const sendEmailAproveUser = async ({
+  from,
+  to,
+  lang,
+  name,
+  templateName,
+  caName,
+  link,
+}: SendEmailParams & { link: string }) => {
+  const language = languages[lang]({ template: templateName });
+  const templatePath = path.join(__dirname, 'templates', lang, 'aproved_credential.html');
+  const templateContent = fs.readFileSync(templatePath, 'utf8');
+  const { subject } = language.sendEmailApprove;
+  const message = templateContent
+    .replace('##NAME##', name)
+    .replace('##CREADNAME##', templateName)
+    .replace('##CANAME##', caName)
+    .replace('##CLICK_URL##', link);
+
+  return sendMail(from, to, subject, message);
+};
+
+export const sendPendingApprovals = async ({
+  from,
+  to,
+  lang,
+  templateName,
+  caName,
+  link,
+}: SendEmailParams & { link: string }) => {
+  const language = languages[lang]();
+  const templatePath = path.join(__dirname, 'templates', lang, 'pending_approvals.html');
+  const templateContent = fs.readFileSync(templatePath, 'utf8');
+  const { subject } = language.pendingAprovals;
+  const message = templateContent
+    .replace('##CREADNAME##', templateName)
+    .replace('##CANAME##', caName)
+    .replace('##CLICK_URL##', link);
+
+  return sendMail(from, to, subject, message);
+};
+
+export const sendEmailNotifyRevoke = async ({
+  from,
+  to,
+  lang,
+  templateName,
+  caName,
+  userName,
+}: SendEmailParams & { userName: string }) => {
+  const language = languages[lang]({ template: templateName, ca: caName });
+  const templatePath = path.join(__dirname, 'templates', lang, 'revoke_user.html');
+  const templateContent = fs.readFileSync(templatePath, 'utf8');
+  const { subject } = language.credentialRevoke;
+  const message = templateContent
+    .replace('##CREADNAME##', templateName)
+    .replace('##CANAME##', caName)
+    .replace('##NAME##', userName);
+
+  return sendMail(from, to, subject, message);
+};
+
+export const sendDemoInviteEmail = async ({
+  from,
+  to,
+  lang,
+  name,
+  templateName,
+  caName,
+  link,
+}: SendEmailParams & { link: string }) => {
+  const language = languages[lang]();
+  const templatePath = path.join(__dirname, 'templates', lang, 'demo_invite.html');
+  const templateContent = fs.readFileSync(templatePath, 'utf8');
+  const { subject } = language.demoInvite;
+  const message = templateContent
+    .replace('##NAME##', name)
+    .replace('##CREADNAME##', templateName)
+    .replace('##CANAME##', caName)
+    .replace('##CLICK_URL##', link)
+    .replace('##_TITLE_##', language.demoInvite.title);
+
+  return sendMail(from, to, subject, message);
+};

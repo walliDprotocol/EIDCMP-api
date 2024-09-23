@@ -1,5 +1,5 @@
 {
-  "name": "sm-api-gateway",
+  "name": "eidcmp-api-gateway",
   "version": "1.0.0",
   "description": "API gateway to control dca",
   "main": "./src/index.ts",
@@ -17,7 +17,7 @@
     "lint:fix": "eslint . --fix"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "files": [
     "dist/**/*"
@@ -30,6 +30,7 @@
     "@types/body-parser": "^1.19.2",
     "@types/mongoose": "^5.11.97",
     "@types/passport": "^1.0.12",
+    "@types/qrcode": "^1.5.5",
     "12factor-config": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "big.js": "^6.2.1",

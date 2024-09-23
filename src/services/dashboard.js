@@ -17,10 +17,9 @@ const listCAbyAdmin = async (wa) => {
 
     if (!output || output.length <= 0) {
       logError('There is no CA for that user!');
-      output = [{ _id: '' }];
+      output = { _id: '' };
       // throw 'There is no CA for that user!';
     }
-    logDebug('output ', output);
     return output;
   } catch (ex) {
     logError('Error listing CA');
@@ -86,7 +85,7 @@ const getDashboard = async (wa) => {
         name: elem.name,
         tid: elem._id.toHexString(),
         cid: caItem.cid,
-        frontend_props: elem.frontend_props,
+        frontendProps: elem.frontendProps,
         excelTemplate: elem.excelTemplate || 'NA',
         templateItens,
         users: templateUsersByStatus,

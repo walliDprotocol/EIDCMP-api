@@ -34,6 +34,8 @@ const Database: DataBase = {
   findOneAndUpdate: (schema: DataBaseSchemas, filter: any, update: any, options: any) => mongoDB[schema].findOneAndUpdate(filter, update, options),
   insertMany: (schema: DataBaseSchemas, data: any, options: any) => mongoDB[schema].insertMany(data, options),
   updateOne: (schema: DataBaseSchemas, filter: any, update: any, options: any) => mongoDB[schema].updateOne(filter, update, options),
+  remove: (schema: DataBaseSchemas, filter: any, options: any) => mongoDB[schema].findOneAndDelete(filter, options),
+  removeAll: (schema: DataBaseSchemas, filter: any, options: any) => mongoDB[schema].deleteMany(filter, options),
 };
 
 export default Database;

@@ -10,7 +10,10 @@ const { inviteNewUser } = require('src/services/user');
 const { listTemplateItens } = require('src/services/templateItem');
 const { randomCode } = require('src/services/utils');
 
-const { sendEmailNotifyRevoke, inviteEmailForDemo } = require('src/services/mailer');
+const {
+  //  sendEmailNotifyRevoke,
+  inviteEmailForDemo,
+} = require('src/services/mailer');
 
 const createDemoInvite = async (input) => {
   logDebug('createDemoInvite :  ', input);
@@ -58,8 +61,8 @@ const createDemoInvite = async (input) => {
   return { code: 200, mgs: (`email have been send with sucess ${clickableLink}`) };
 };
 
-const prepareImportData = async (templateItens, user_data, tid, table_values) => {
-  logDebug('*********  prepareImportData ******* ', user_data);
+const prepareImportData = async (templateItens, userData, tid, table_values) => {
+  logDebug('*********  prepareImportData ******* ', userData);
 
   const userDataPrepared = [];
   // Adding Credential ID if template have that item
@@ -79,7 +82,7 @@ const prepareImportData = async (templateItens, user_data, tid, table_values) =>
       if (elem.attrFormat === 'keyval') {
         let containProperty = false;
         let val = '';
-        Object.entries(user_data).forEach(([key, value]) => {
+        Object.entries(userData).forEach(([key, value]) => {
           logDebug('key ', key);
 
           // logDebug(key + ' ' + value); // "a 5", "b 7", "c 9"
@@ -106,13 +109,13 @@ const prepareImportData = async (templateItens, user_data, tid, table_values) =>
   }
 
   // add table data for template
-  // find type for table get templateItem id and add values supply by input
+  // find item for table get templateItem id and add values supply by input
   if (table_values && table_values.length > 0) {
     // logDebug("Will adding table template ", table_values);
     const tableItem = templateItens.find((elem) => elem.attrFormat.toLowerCase() === 'table');
     if (!tableItem) {
-      logError('There isnt table type in this template ', templateItens);
-      throw new Error('There isnt table type in this template!');
+      logError('There isnt table item in this template ', templateItens);
+      throw new Error('There isnt table item in this template!');
     }
     userDataPrepared.push({
       temp_item_id: tableItem._id,
@@ -125,13 +128,13 @@ const prepareImportData = async (templateItens, user_data, tid, table_values) =>
 };
 
 /**
- *  1. Check if wa_admin is wallet admin
+ *  1. Check if waAdmin is wallet admin
  *  2. Import data
  *
  */
 const importMultiData = async (input) => {
   logDebug('Import multi Data :  ', input);
-  // TODO check if the wa_admin is admin
+  // TODO check if the waAdmin is admin
   // loop to import dada call indivually the newinvite data
   const templateItens = await listTemplateItens(input.tid);
   logDebug('Email number #', input.import_data.length);
@@ -139,7 +142,7 @@ const importMultiData = async (input) => {
   // await
   const result = await Promise.all(
     input.import_data.map(async (elem) => {
-      const userData = await prepareImportData(templateItens, elem.user_data, input.tid, elem.table_values || []);
+      const userData = await prepareImportData(templateItens, elem.userData, input.tid, elem.table_values || []);
       const email = elem.email || elem.Email || elem['e-mail'];
 
       await inviteNewUser(
@@ -147,7 +150,7 @@ const importMultiData = async (input) => {
           tid: input.tid,
           cid: input.cid,
           imgArray: elem.imgArray,
-          wa_admin: input.wa_admin,
+          waAdmin: input.waAdmin,
           email,
           data: userData,
         },
@@ -165,7 +168,7 @@ const validateParseFile = async (elements, tid) => {
   logDebug(' *** validateParseFile *** | Number of parsed element #', elements.length);
   const templateItens = await listTemplateItens(tid);
   const result = await Promise.all(
-    elements.map(async (elem) => prepareImportData(templateItens, elem.user_data, tid, elem.table_values || [])),
+    elements.map(async (elem) => prepareImportData(templateItens, elem.userData, tid, elem.table_values || [])),
   );
   return result;
 };
@@ -201,7 +204,7 @@ const revokeUser = async (data) => {
     const updateUser = await DB.findOneAndUpdate(DataBaseSchemas.USER, { _id: data.id, tid: data.tid }, updateBody, { new: true });
 
     // send email warning user of revocation
-    // const emailName = user.user_data.name || user.user_data.Name || user.user_data.nome || user.user_data.Nome || '';
+    // const emailName = user.userData.name || user.userData.Name || user.userData.nome || user.userData.Nome || '';
     // await sendEmailNotifyRevoke(from, user.email, {
     //   template: template.name, ca: ca.name, name: emailName, lang: template.lang,
     // });
@@ -254,17 +257,22 @@ const caBillingStatus = async (ca_id, leftTemplates, leftCredentials) => {
 
 const getAdminProfile = async (wa) => {
   let admin = await DB.findOne(DataBaseSchemas.ADMIN, { wa }, '-_id -createdAt -updatedAt');
+
+  if (!admin) {
+    return null;
+  }
+
   const dca = await DB.findOne(DataBaseSchemas.CA, { creatorWA: wa }, ' -createdAt -updatedAt');
 
-  logDebug('Admin found ', admin);
-  logDebug('dca found ', dca);
-
   const billing = { balances: [], no_dca: false };
-  if (dca.contract_address === '0x99999999') {
-    logDebug('Find billing profile wa', wa);
 
+  if (!dca) {
+    logDebug('No dca found for admin ', wa);
+    return admin;
+  }
+
+  if (dca.contract_address === '0x99999999') {
     const balances = await DB.findOne(DataBaseSchemas.BILLING, { owner_wallet: wa }, '-_id -owner_email -owner_wallet');
-    logDebug('balances found ', balances);
     billing.balances.push({
       address: dca.contract_address,
       balances: await caBillingStatus(dca._id.toHexString(), balances.create_template, balances.revoke_user),
@@ -278,7 +286,6 @@ const getAdminProfile = async (wa) => {
     admin.no_dca = billing.no_dca;
   }
 
-  logDebug('will return admin ', admin);
   return admin;
 };
 

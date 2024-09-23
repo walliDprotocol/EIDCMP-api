@@ -9,7 +9,7 @@ const { logError } = require('src/core-services/logFunctionFactory').getLogger('
 const router = new express.Router();
 const UPDATE_CA_PARAMETERS = ['name', 'img_url', 'cid'];
 const CREATE_CA_PARAMETERS = ['wa', 'admin_email'];
-const GETCA_PARAMETERS = ['wa_admin', 'cid'];
+const GET_CA_PARAMETERS = ['waAdmin', 'cid'];
 
 router.post('/', async (request, response) => {
   try {
@@ -45,7 +45,7 @@ router.post('/updateca', async (request, response) => {
 
 router.post('/getca', async (request, response) => {
   try {
-    const { cid } = validator(request.body, GETCA_PARAMETERS);
+    const { cid } = validator(request.body, GET_CA_PARAMETERS);
     const ca = await DB.findOne(DataBaseSchemas.CA, { _id: cid }, '', {});
 
     response.status(200).json({

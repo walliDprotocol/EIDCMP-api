@@ -55,7 +55,7 @@ router.post('/revoke', async (request, response) => {
 });
 
 //  Parse import File
-router.post('/parsefile', upload.single('uploadfile'), async (req, res) => {
+router.post('/parsefile', upload.single('file'), async (req, res) => {
   try {
     const { tid } = validator(req.body, ['tid']);
     const dir = path.join(__dirname, '../../uploads/');
@@ -65,14 +65,15 @@ router.post('/parsefile', upload.single('uploadfile'), async (req, res) => {
     }
 
     logDebug('tid  ', tid);
+    logDebug('body  ', req.body);
     // create folder if there isnt exist
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
     }
 
-    const resutl = await importExcelData(dir + req.file.filename, tid);
+    const result = await importExcelData(dir + req.file.filename, tid);
     res.json({
-      data: resutl,
+      data: result,
     });
   } catch (ex) {
     logError('router:parsefile ', ex);

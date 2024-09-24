@@ -51,6 +51,28 @@ router.get('/:fileId', async (req, res) => {
   }
 });
 
+router.get('/template/:fileId', async (req, res) => {
+  const { fileId } = req.params;
+  logDebug('fileId', fileId);
+  try {
+    const fileIdObjectId = new ObjectId(fileId);
+    const { db } = mongoose.connection;
+    const bucket = new GridFSBucket(db, {
+      bucketName: 'uploads',
+    });
+    const downloadStream = bucket.openDownloadStream(fileIdObjectId);
+    res.set('Content-disposition', `attachment; filename="${fileId}.csv`);
+    res.setHeader('Content-type', 'text/csv');
+    downloadStream.pipe(res);
+  } catch (error) {
+    logError('Error downloading file', error);
+    res.status(500).json({
+      fileId,
+      error,
+    });
+  }
+});
+
 router.post('/:filename', (req, res) => {
   upload.single('file')(req, res, async (err) => {
     if (err) {

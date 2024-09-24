@@ -22,7 +22,7 @@ const CaSchema = new Schema(
       type: String,
       default: '0x99999999',
     },
-    img_url: String,
+    imgUrl: String,
     admin: [String],
   },
   { collection: 'certAuthority', versionKey: false },

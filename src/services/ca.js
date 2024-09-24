@@ -36,12 +36,12 @@ const updateCA = async (data) => {
     const criteria = { _id: data.cid };
     const updateBody = {
       name: data.name,
-      img_url: data.img_url,
+      imgUrl: data.imgUrl,
     };
 
     const out = await DB.findOneAndUpdate(DataBaseSchemas.CA, criteria, updateBody, { new: true });
 
-    return out;
+    return out.toJSON();
   } catch (ex) {
     logError('*************  error when create CA ################');
     throw ex;

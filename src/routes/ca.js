@@ -7,7 +7,7 @@ const validator = require('src/core-services/parameterValidator');
 const { logError } = require('src/core-services/logFunctionFactory').getLogger('router:ca');
 
 const router = new express.Router();
-const UPDATE_CA_PARAMETERS = ['name', 'img_url', 'cid'];
+const UPDATE_CA_PARAMETERS = ['name', 'imgUrl', 'cid'];
 const CREATE_CA_PARAMETERS = ['wa', 'admin_email'];
 const GET_CA_PARAMETERS = ['waAdmin', 'cid'];
 
@@ -29,14 +29,14 @@ router.post('/', async (request, response) => {
 
 router.post('/updateca', async (request, response) => {
   try {
-    const { name, cid, img_url: imgUrl } = validator(request.body, UPDATE_CA_PARAMETERS);
-    const out = await updateCA({ name, cid, img_url: imgUrl });
+    const { name, cid, imgUrl } = validator(request.body, UPDATE_CA_PARAMETERS);
+    const out = await updateCA({ name, cid, imgUrl });
 
     response.status(200).json({
-      message: out,
+      ...out,
     });
   } catch (error) {
-    logError(' router:create CA ', error);
+    logError(' router:update CA ', error);
 
     response.status(500)
       .json({ data: null, message: error.message || 'Internal server error' });

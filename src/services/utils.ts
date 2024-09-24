@@ -1,19 +1,21 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable func-names */
 
-const { validateParseFile } = require('src/services/admin');
+import { StringMap } from 'src/types';
+import { parse } from 'csv-parse';
+import { validateParseFile } from 'src/services/admin';
+import { uploadFile } from './ftp';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:utils');
 
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const fs = require('fs');
-const parse = require('csv-parse');
 
 const CVS_SPLIT_CHAR = ';';
 const DataTypeSample = '<10-10-2020>';
 
-const randomCode = async function (length, chars) {
+export const randomCode = async function (length: number, chars: string) {
   let mask = '';
   if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
   if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -25,7 +27,7 @@ const randomCode = async function (length, chars) {
 };
 
 // add columns for table adding sample for each column
-const getHeadersForTables = async function (templateItem) {
+const getHeadersForTables = async function (templateItem: any) {
   const colHeaders = [];
   const REPEAT_NUMBER = 22;
 
@@ -61,8 +63,8 @@ const getHeadersForTables = async function (templateItem) {
   * add template columns and sample line
   * @param {Object[]} templateItens
   */
-const generateExcelHeadersAndSample = async function (templateItens) {
-  let colHeaders = [];
+const generateExcelHeadersAndSample = async function (templateItens: any) {
+  let colHeaders: any = [];
   for (let i = 0; i < templateItens.length; i += 1) {
     const line = templateItens[i];
     logDebug(' item table  ', line);
@@ -91,12 +93,12 @@ const generateExcelHeadersAndSample = async function (templateItens) {
   return colHeaders;
 };
 
-const genExcelTemplate = async function (template_id, templateItens) {
+export const genExcelTemplate = async function (template_id: string, templateItens: any) {
   logDebug('INPUT :  template id ', template_id, ' templateItens ', templateItens);
 
   const parsedItens = await generateExcelHeadersAndSample(templateItens);
   const headers = [];
-  const sampleItem = {};
+  const sampleItem: StringMap = {};
 
   //! force  first column always be an email  !!
   headers.push({ id: '9995', title: 'email' });
@@ -114,7 +116,7 @@ const genExcelTemplate = async function (template_id, templateItens) {
 
   fs.mkdirSync(path.join(__dirname, folder), { recursive: true });
 
-  const filePath = path.join(__dirname, `/uploads/excelTemplates/importa-data-${template_id}.csv`);
+  const filePath = path.join(__dirname, `/uploads/excelTemplates/template_${template_id}.csv`);
   logDebug('filePath ', filePath);
 
   const csvWriter = createCsvWriter({
@@ -124,10 +126,15 @@ const genExcelTemplate = async function (template_id, templateItens) {
   });
 
   await csvWriter
-    .writeRecords([sampleItem])
-    .then(() => logDebug('The CSV file was written successfully'));
+    .writeRecords([sampleItem]);
 
-  const excelUrl = `excelTemplates/template_${template_id}.csv`;
+  logDebug('The CSV file was written successfully');
+
+  const excelTemplateBuffer = fs.readFileSync(filePath);
+
+  const { url: excelUrl } = await uploadFile(`template_${template_id}.csv`, { buffer: Buffer.from(new Uint8Array(excelTemplateBuffer)) });
+
+  // const excelUrl = `excelTemplates/template_${template_id}.csv`;
 
   logDebug('Location of excel file ', excelUrl);
 
@@ -138,7 +145,7 @@ const genExcelTemplate = async function (template_id, templateItens) {
 };
 
 // email;PLACEHOLDER
-const findHeadersDelimiter = async function (filePath) {
+const findHeadersDelimiter = async function (filePath: string) {
   // read contents of the file
   const data = fs.readFileSync(filePath, 'utf-8');
 
@@ -160,15 +167,16 @@ const findHeadersDelimiter = async function (filePath) {
 };
 
 // for a given csv file parse all the information of rows!! Row[0] always be Headers
-const parseDataFromCVS = async function (filePath) {
+const parseDataFromCVS = async function (filePath: string): Promise<string[][]> {
+  logDebug('filePath ', filePath);
   const delimiterChar = await findHeadersDelimiter(filePath);
-  logDebug('Delimitador char ', delimiterChar);
+  logDebug('delimiterChar', delimiterChar);
 
-  const csvData = [];
+  const csvData: string[][] = [];
   return new Promise((resolve) => {
     fs.createReadStream(filePath)
       .pipe(parse({ delimiter: delimiterChar }))
-      .on('data', (csvrow) => {
+      .on('data', (csvrow: string[]) => {
         csvData.push(csvrow);
       })
       .on('end', () => {
@@ -178,8 +186,8 @@ const parseDataFromCVS = async function (filePath) {
 };
 
 // check if there are more then one header, if true its for adding a table!
-const checkIfContainTable = function (header) {
-  const jsonHeader = {};
+const checkIfContainTable = function (header: string[]) {
+  const jsonHeader: Record<string, number> = {};
   let containTable = false;
   header.forEach((key) => {
     const keyLowerCase = key.toLowerCase();
@@ -192,7 +200,7 @@ const checkIfContainTable = function (header) {
   });
   // counting the number of keys more then 1, column of the table
   // logDebug('Json header ', jsonHeader);
-  const tableKeys = [];
+  const tableKeys: Record<string, number> = {};
   for (const key in jsonHeader) {
     if (jsonHeader[key] > 1) {
       tableKeys[key] = jsonHeader[key];
@@ -202,58 +210,58 @@ const checkIfContainTable = function (header) {
   return { containTable, headerMap: jsonHeader, tableColumnsNum: Object.keys(tableKeys).length };
 };
 
-const parseExcelWithTable = function (rows, headerMaps, numberOfColumns) {
-  const finalArray = [];
-  let header = [];
-  let i = 0;
+// const parseExcelWithTable = function (rows: string[], headerMaps: Record<string, number>, numberOfColumns: number) {
+//   const finalArray: any[] = [];
+//   let header: string[] = [];
+//   let i = 0;
 
-  logDebug('Number of columns #', numberOfColumns);
-  rows.forEach((elem) => {
-    if (i === 0) {
-      header = elem;
-    } else {
-      let fieldIndex = 0;
-      const o = { email: '', userData: {}, table_values: [] };
-      let tableInnerLine = 0;
-      let tableRow = {};
-      elem.forEach((val) => {
-        if (header[fieldIndex].toLowerCase().includes('email') || header[fieldIndex].includes('Email') || header[fieldIndex].includes('e-mail')) {
-          o.email = val;
-        } else {
-          const nTableColumn = headerMaps[header[fieldIndex].toLowerCase()];
-          // if headerMaps with fieldVal > 1 is because its a table otherwise its a keyval
-          if (nTableColumn !== 1) {
-            tableRow[header[fieldIndex].toLowerCase()] = val;
-            tableInnerLine += 1;
+//   logDebug('Number of columns #', numberOfColumns);
+//   rows.forEach((elem) => {
+//     if (i === 0) {
+//       header = elem;
+//     } else {
+//       let fieldIndex = 0;
+//       const o = { email: '', userData: {}, table_values: [] } as any;
+//       let tableInnerLine = 0;
+//       let tableRow: any = {};
+//       elem.forEach((val) => {
+//         if (header[fieldIndex].toLowerCase().includes('email') || header[fieldIndex].includes('Email') || header[fieldIndex].includes('e-mail')) {
+//           o.email = val;
+//         } else {
+//           const nTableColumn = headerMaps[header[fieldIndex].toLowerCase()];
+//           // if headerMaps with fieldVal > 1 is because its a table otherwise its a keyval
+//           if (nTableColumn !== 1) {
+//             tableRow[header[fieldIndex].toLowerCase()] = val;
+//             tableInnerLine += 1;
 
-            // Assuming there is only one table in excel data
-            // Assuming that all column of the same line are one after another
-            // when the counter tableinnerline is the same of table columns will be added as table line
-            if (tableInnerLine >= numberOfColumns) {
-              o.table_values.push(tableRow);
-              tableRow = {};
-              tableInnerLine = 0;
-            }
+//             // Assuming there is only one table in excel data
+//             // Assuming that all column of the same line are one after another
+//             // when the counter tableinnerline is the same of table columns will be added as table line
+//             if (tableInnerLine >= numberOfColumns) {
+//               o.table_values.push(tableRow);
+//               tableRow = {};
+//               tableInnerLine = 0;
+//             }
 
-            // if its 1 its a keyValue
-          } else {
-            o.userData[header[fieldIndex].toLowerCase()] = val;
-          }
-        }
-        fieldIndex += 1;
-      });
-      // just add empty or filled
-      finalArray.push(o);
-    }
-    i += 1;
-  });
-  return finalArray;
-};
+//             // if its 1 its a keyValue
+//           } else {
+//             o.userData[header[fieldIndex].toLowerCase()] = val;
+//           }
+//         }
+//         fieldIndex += 1;
+//       });
+//       // just add empty or filled
+//       finalArray.push(o);
+//     }
+//     i += 1;
+//   });
+//   return finalArray;
+// };
 
 // -> Import Excel Data to MySQL database
-const importExcelData = async function (filePath, tid) {
-  let finalArray = [];
-  let header = [];
+export const importExcelData = async function (filePath: string, tid: number) {
+  const finalArray:any[] = [];
+  let header: string[] = [];
   let i = 0;
   try {
     const rows = await parseDataFromCVS(filePath);
@@ -262,14 +270,15 @@ const importExcelData = async function (filePath, tid) {
     const haveTable = checkIfContainTable(rows[0]);
     // logDebug('Have table ', haveTable)
     if (haveTable.containTable) {
-      finalArray = parseExcelWithTable(rows, haveTable.headerMap, haveTable.tableColumnsNum);
+      logDebug('Not implemented yet!');
+      // finalArray = parseExcelWithTable(rows, haveTable.headerMap, haveTable.tableColumnsNum);
     } else {
       rows.forEach((elem) => {
         if (i === 0) {
           header = elem;
         } else {
           let valIdx = 0;
-          const o = { email: '', userData: {} };
+          const o: any = { email: '', userData: {} };
           elem.forEach((val) => {
             if (header[valIdx].includes('email')) {
               o.email = val;
@@ -298,8 +307,4 @@ const importExcelData = async function (filePath, tid) {
     // delete file locally!!
     fs.unlinkSync(filePath);
   }
-};
-
-module.exports = {
-  randomCode, importExcelData, genExcelTemplate,
 };

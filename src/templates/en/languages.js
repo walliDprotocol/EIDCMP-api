@@ -1,7 +1,7 @@
 module.exports = function (details) {
   module.inviteUser = {
     title: 'Your credentials is ready',
-    subject: `Aquí está tu ${details.template} emitida por ${details.ca}.`,
+    subject: `Here is your ${details.template} sent by ${details.ca}.`,
   },
   module.demoInvite = {
     title: 'Your private beta credentials - WalliD for issuers',

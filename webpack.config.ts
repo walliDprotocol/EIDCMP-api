@@ -36,10 +36,6 @@ const getConfig = (env: { [key: string]: string }, argv: { [key: string]: string
             from: path.resolve(__dirname, 'assets'),
             to: path.resolve(__dirname, 'build', 'assets'),
           },
-          {
-            from: path.resolve(__dirname, 'uploads'),
-            to: path.resolve(__dirname, 'build', 'uploads'),
-          },
         ],
       }),
     ],

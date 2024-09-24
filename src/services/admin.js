@@ -62,7 +62,7 @@ const createDemoInvite = async (input) => {
 };
 
 const prepareImportData = async (templateItens, userData, tid, table_values) => {
-  logDebug('*********  prepareImportData ******* ', userData);
+  logDebug('*********  prepareImportData ******* ', templateItens, userData);
 
   const userDataPrepared = [];
   // Adding Credential ID if template have that item
@@ -76,37 +76,35 @@ const prepareImportData = async (templateItens, userData, tid, table_values) => 
   }
 
   // loop over all items of a template check if isnt at data throw an error
-  for (const elem in templateItens) {
-    if (Object.prototype.hasOwnProperty.call(templateItens, elem)) {
-      // logDebug('Elem ', elem)
-      if (elem.attrFormat === 'keyval') {
-        let containProperty = false;
-        let val = '';
-        Object.entries(userData).forEach(([key, value]) => {
-          logDebug('key ', key);
+  templateItens.forEach((elem) => {
+    logDebug('Elem ', elem);
+    if (elem.attrFormat === 'keyval') {
+      let containProperty = false;
+      let val = '';
+      Object.entries(userData).forEach(([key, value]) => {
+        logDebug('key ', key);
 
-          // logDebug(key + ' ' + value); // "a 5", "b 7", "c 9"
-          if (elem.attr.toLowerCase() === key.toLowerCase()) {
-            containProperty = true;
-            val = value;
-          }
-        });
-        logDebug('containProperty ', containProperty);
-        if (!containProperty && (elem.isMandatory === 'true' || elem.isMandatory === true)) {
-        // logDebug('User data Key ', key, ' value ', value);
-          logError(`There is no attr ${elem.attr.toLowerCase()} in template item for template id ${tid}`);
-          throw new Error(`There is no attr ${elem.attr.toLowerCase()} in template item for template id ${tid}`);
+        // logDebug(key + ' ' + value); // "a 5", "b 7", "c 9"
+        if (elem.attr.toLowerCase() === key.toLowerCase()) {
+          containProperty = true;
+          val = value;
         }
-
-        userDataPrepared.push({
-          value: val,
-          isPublic: elem.isPublic,
-          // isMandatory: tempItem.isMandatory || 'true',
-          temp_item_id: elem._id,
-        });
+      });
+      logDebug('containProperty ', containProperty);
+      if (!containProperty && (elem.isMandatory === 'true' || elem.isMandatory === true)) {
+        // logDebug('User data Key ', key, ' value ', value);
+        logError(`There is no attr ${elem.attr.toLowerCase()} in template item for template id ${tid}`);
+        throw new Error(`There is no attr ${elem.attr.toLowerCase()} in template item for template id ${tid}`);
       }
+
+      userDataPrepared.push({
+        value: val,
+        isPublic: elem.isPublic,
+        // isMandatory: tempItem.isMandatory || 'true',
+        temp_item_id: elem._id,
+      });
     }
-  }
+  });
 
   // add table data for template
   // find item for table get templateItem id and add values supply by input
@@ -123,7 +121,7 @@ const prepareImportData = async (templateItens, userData, tid, table_values) => 
       values: table_values,
     });
   }
-  // logDebug('User Imported Data ',user_data_prepared )
+  logDebug('userDataPrepared: ', userDataPrepared);
   return userDataPrepared;
 };
 

@@ -2,16 +2,15 @@
 /* eslint-disable func-names */
 
 import { StringMap } from 'src/types';
+import { parse } from 'csv-parse';
+import { validateParseFile } from 'src/services/admin';
 import { uploadFile } from './ftp';
-
-const { validateParseFile } = require('src/services/admin');
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:utils');
 
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const fs = require('fs');
-const parse = require('csv-parse');
 
 const CVS_SPLIT_CHAR = ';';
 const DataTypeSample = '<10-10-2020>';
@@ -168,15 +167,16 @@ const findHeadersDelimiter = async function (filePath: string) {
 };
 
 // for a given csv file parse all the information of rows!! Row[0] always be Headers
-const parseDataFromCVS = async function (filePath: string): Promise<string[]> {
+const parseDataFromCVS = async function (filePath: string): Promise<string[][]> {
+  logDebug('filePath ', filePath);
   const delimiterChar = await findHeadersDelimiter(filePath);
-  logDebug('Delimitador char ', delimiterChar);
+  logDebug('delimiterChar', delimiterChar);
 
-  const csvData: string[] = [];
+  const csvData: string[][] = [];
   return new Promise((resolve) => {
     fs.createReadStream(filePath)
       .pipe(parse({ delimiter: delimiterChar }))
-      .on('data', (csvrow: string) => {
+      .on('data', (csvrow: string[]) => {
         csvData.push(csvrow);
       })
       .on('end', () => {
@@ -186,7 +186,7 @@ const parseDataFromCVS = async function (filePath: string): Promise<string[]> {
 };
 
 // check if there are more then one header, if true its for adding a table!
-const checkIfContainTable = function (header: string) {
+const checkIfContainTable = function (header: string[]) {
   const jsonHeader: Record<string, number> = {};
   let containTable = false;
   header.forEach((key) => {
@@ -260,7 +260,7 @@ const checkIfContainTable = function (header: string) {
 
 // -> Import Excel Data to MySQL database
 export const importExcelData = async function (filePath: string, tid: number) {
-  const finalArray = [];
+  const finalArray:any[] = [];
   let header: string[] = [];
   let i = 0;
   try {
@@ -278,7 +278,7 @@ export const importExcelData = async function (filePath: string, tid: number) {
           header = elem;
         } else {
           let valIdx = 0;
-          const o = { email: '', userData: {} };
+          const o: any = { email: '', userData: {} };
           elem.forEach((val) => {
             if (header[valIdx].includes('email')) {
               o.email = val;

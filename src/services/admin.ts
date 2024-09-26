@@ -287,11 +287,29 @@ const getAdminProfile = async (wa) => {
   return admin;
 };
 
+// TODO: need to be refactored
+async function updateBilling(contractAddress: string, balances: any) {
+  try {
+    const dca = await DB.findOne(DataBaseSchemas.CA, { contractAddress }, ' -createdAt -updatedAt');
+    if (!dca) {
+      throw new Error('No dca found for this address');
+    }
+
+    if (dca.contract_address === '0x99999999') {
+      return balances;
+    }
+    return balances;
+  } catch (error) {
+    logError(error);
+    throw error;
+  }
+}
+
 export {
   revokeUser,
   importMultiData,
   acceptOnboardingInvite,
   getAdminProfile,
   validateParseFile,
-  createDemoInvite,
+  createDemoInvite, updateBilling,
 };

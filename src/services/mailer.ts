@@ -66,11 +66,37 @@ const sendMail = function (from: string, to: string, subject: string, message: s
     });
 };
 
-export const sendAdminInvite = async function (from: string, to: string, details: { CA: string; }) {
-  const message = `<p>You have been invited by <b>${from}</b> to become an administrator of ${details.CA}`;
-  const subject = `WalliD: Invite from ${details.CA}`;
+export const sendAdminInvite = async function (fromEmail: string, to: string, details : any) {
+  const from = EMAIL_SENDER || 'WalliD - Credentials <credentials@wallid.io>';
 
-  return Promise.resolve(sendMail(from, to, subject, message));
+  logDebug('Send sendAdminInvite details ', details);
+  const link = `${config.ADMIN_INVITE}${details.inviteId}`;
+
+  logDebug('Link', link);
+
+  const language = languages[details.lang || 'en']({
+    from: fromEmail,
+    ca: details.caName,
+  });
+
+  const templatePath = path.join(__dirname, 'templates', details.lang || 'en', 'invite_admin.html');
+  const templateContent = fs.readFileSync(templatePath, 'utf8');
+  const { title, subject } = language.adminInvite;
+
+  const message = templateContent
+    .replaceAll('##CANAME##', details.caName)
+    .replace('##CLICK_URL##', link)
+    .replace('##_TITLE_##', title)
+    .replace('##EMAIL##', fromEmail);
+
+  await sendMail(from, to, subject, message);
+
+  return {
+    data: {
+      mgs: `The invite ${details.inviteId} was sent!`,
+      inviteId: details.inviteId,
+    },
+  };
 };
 
 export const sendEmailInviteUser = async function (newUser:UserCredentialType & { email: string }, credencialIssuerDetails: CredencialIssuerDetails) {

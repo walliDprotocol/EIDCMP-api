@@ -204,7 +204,7 @@ const inviteNewUser = async (input) => {
       user_id: newUSer._id.toString(),
       tid: input.tid.trim(),
       cid: input.cid.trim(),
-      ca_photo: ca.img_url,
+      ca_photo: ca.imgUrl,
       waAdmin: input.waAdmin.trim(),
     };
     // save invite in table:
@@ -261,7 +261,7 @@ const getUserById = async (input) => {
 
     const user = await DB.findOne(DataBaseSchemas.USER, { _id: input.userId }, null, null);
 
-    logDebug('USers :  ', user);
+    logDebug('Users: ', user);
     if (!user) {
       throw new Error('There is no user for these invite ID');
     }
@@ -288,7 +288,7 @@ const getUserById = async (input) => {
         ...user.toObject(),
         ca_name: ca.name,
         template_name: template.name,
-        img_url: ca.img_url,
+        img_url: ca.imgUrl,
         frontendProps: template.frontendProps,
         template_itens: await listTemplateItens(user.tid),
         userInfractions,
@@ -311,6 +311,7 @@ const getUserByInvite = async (input) => {
     }
 
     const user = await DB.findOne(DataBaseSchemas.USER, { _id: invite.data.userId }, '', null);
+    logDebug('Users :  ', user);
     if (!user) {
       throw new Error('There is no user for these invite ID');
     }
@@ -322,7 +323,7 @@ const getUserByInvite = async (input) => {
         ...user.toObject(),
         ca_name: ca.name,
         template_name: template.name,
-        img_url: ca.img_url,
+        img_url: ca.imgUrl,
         frontendProps: template.frontendProps,
         template_itens: await listTemplateItens(invite.data.tid),
       },

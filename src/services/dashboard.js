@@ -71,7 +71,7 @@ const getDashboard = async (wa) => {
     responseTemplate.contract_address = caItem.contract_address || '0x99999999';
 
     responseTemplate.ca_creator = caItem.creatorWA;
-    responseTemplate.img_url = caItem.img_url;
+    responseTemplate.imgUrl = caItem.imgUrl;
 
     logDebug('**** listTemplateByAdmin **** ');
     const templateItem = await listTemplateByAdmin(wa);

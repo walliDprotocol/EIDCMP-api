@@ -91,7 +91,7 @@ router.post('/importfile', async (request: Request, response: Response) => {
   try {
     validator(request.body, IMPORT_FILE);
 
-    await AdminServices.importMultiData(request.body);
+    await AdminServices.importMultiData(request.body, request.app.locals.WaltIdConfig);
     response.status(200).json({ data: 'Invites will be sent' });
   } catch (error: any) {
     logError('router:create template ', error);

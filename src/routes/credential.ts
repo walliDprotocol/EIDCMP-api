@@ -68,7 +68,7 @@ router.post('/create', async (req, res) => {
     res.status(200).json({ ...resultInvite, credentialUrl });
     // res.status(200).json({ credentialUrl });
   } catch (error:any) {
-    // TODO: delete entry from db from inviteNewUser function call
+    // TODO: delete entry from db from createNewUser function call
     logError('Error inviting user: ', error);
     res.status(500).json({ error: error.message });
   }

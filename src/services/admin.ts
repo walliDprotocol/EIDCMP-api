@@ -15,7 +15,7 @@ const createDemoInvite = async (input: { email: string; name: string; }) => {
   logDebug('createDemoInvite :  ', input);
   const email = input.email.trim() || '';
   const name = input.name.trim() || '';
-  let clickableLink = `${DOMAIN_ENV}/?invite_admin=`;
+  let clickableLink = `${DOMAIN_ENV}/?demoInvite=`;
 
   // create invite
   const inviteData = {

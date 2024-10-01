@@ -4,6 +4,7 @@ const ErrorType = {
   USERNAME_NOT_FOUND: 'UsernameNotFoundError',
   DEFAULT_LOGIN_ERROR: 'DefaultLoginError',
   UNAUTHORIZED: 'UnauthorizedError',
+  INVALID_INVITE: 'InvalidInvite',
 };
 
 type ErrorsType = {
@@ -29,6 +30,10 @@ const errors : ErrorsType = {
   DefaultLoginError: {
     status: 500,
     msg: 'Login error',
+  },
+  InvalidInvite: {
+    status: 403,
+    msg: 'Invalid invite',
   },
 };
 

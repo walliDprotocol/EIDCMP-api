@@ -1,19 +1,12 @@
-const { uploadFile } = require('src/services/ftp');
-
 const { DataBaseSchemas } = require('src/types/enums');
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('service:user');
 
 const { DB } = require('src/database');
-const config = require('src/config').default;
 const { listTemplateItens } = require('src/services/templateItem');
-const QRCode = require('qrcode');
 
 const { sendEmailInviteUser } = require('src/services/mailer');
-
-function generateLink({ assetId }) {
-  return `${config.USER_INVITE}/${assetId}`;
-}
+const { createCredentialOfferUrl } = require('./credential');
 
 const verifyByType = (inputType, value) => {
   if (inputType === 'date') {
@@ -154,114 +147,65 @@ const createNewUser = async (input) => {
     throw ex;
   }
 };
+async function createNewUserWrapper({
+  cid,
+  tid,
+  data,
+  email,
+  imgArray,
+  WaltIdConfig,
+  waAdmin,
+  credentialConfigurationId = 'NaturalPersonVerifiableID',
+}) {
+  const { newUser, credencialIssuerDetails } = await createNewUser({
+    cid,
+    tid,
+    data,
+    email,
+    imgArray,
+  });
 
-//* * create invvite for user! */
-const inviteNewUser = async (input) => {
-  logDebug(' ********* Store New User ***********');
+  logDebug('result', newUser);
+  logDebug('WaltIdConfig', WaltIdConfig);
 
-  const from = config.EMAIL_SENDER || 'WalliD - Credentials <credentials@wallid.io>';
+  const body = {
+    issuerKey: WaltIdConfig.issuerKey,
+    issuerDid: WaltIdConfig.issuerDid,
+    credentialConfigurationId: `${credentialConfigurationId}_jwt_vc_json`,
+    credentialData: {
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+      ],
+      id: newUser.id,
+      type: ['VerifiableCredential', credentialConfigurationId],
+      issuanceDate: new Date().toISOString(),
+      credentialSubject: newUser,
+    },
+  };
 
-  try {
-    // load CA and Template
-    const template = await DB.findOne(DataBaseSchemas.TEMPLATE, { _id: input.tid }, null, null);
-    const ca = await DB.findOne(DataBaseSchemas.CA, { _id: input.cid }, null, null);
+  logDebug('body', body);
 
-    if (!template) {
-      throw new Error(`There is no template with ID:${input.tid}`);
-    }
-    if (!ca) {
-      throw new Error(`There is no CA with ID:${input.cid}`);
-    }
+  const response = await createCredentialOfferUrl(body);
 
-    // verify if all fields match with templates itens, length, type etc
-    const templateItens = await listTemplateItens(input.tid);
-    // logDebug('Data input  ', input.data);
-    const returnData = await checkTemplateItensAndDataType(templateItens, input.data);
+  const { credentialUrl } = response;
+  logDebug('credentialUrl', credentialUrl);
 
-    // create a userInfractions object and using the infractions data
-    const userInfractions = await DB.create(DataBaseSchemas.USER_INFRACTIONS, {
-      infractions: [],
-    });
+  // Invite the user via email
 
-    // create user in user table
-    const createUser = {
-      tid: input.tid.trim(),
-      cid: input.cid.trim(),
-      email: input.email,
-      imgArray: input.imgArray,
-      public_field: returnData.public_field,
-      userData: returnData.userData,
-      status: 'waiting_wallet',
-      userInfractionsId: userInfractions._id.toString(),
-    };
-    const newUSer = await DB.create(DataBaseSchemas.USER, createUser);
+  const resultInvite = await sendEmailInviteUser(newUser, { ...credencialIssuerDetails, waAdmin });
 
-    logDebug('Will Create pending invite  ', newUSer);
+  logDebug('result', resultInvite);
+  return { newUser, credentialUrl, resultInvite };
+}
 
-    // store the hash's for pivate fields
-    // store public fields in user data
-    const inviteData = {
-      user_id: newUSer._id.toString(),
-      tid: input.tid.trim(),
-      cid: input.cid.trim(),
-      ca_photo: ca.img_url,
-      waAdmin: input.waAdmin.trim(),
-    };
-    // save invite in table:
-    const inviteId = await DB.create(DataBaseSchemas.PENDING_INVITES, {
-      from, to: input.email, type: 'invite_user', data: inviteData,
-    });
-    logDebug('InviteId', inviteId);
-
-    // const clickableLink = generateLink({ assetId: inviteData.user_id });
-
-    // base64 images don't work, using gridfs to store images
-    const qrCodeBuffer = await QRCode.toBuffer(`${inviteId._id}`, { type: 'png' });
-
-    const { url: qrCode } = await uploadFile(`qrCode_${inviteId._id}`, { buffer: new Uint8Array(qrCodeBuffer) });
-    logDebug('qrCode url', qrCode);
-
-    logDebug('Invite Data ', inviteData);
-    // logDebug('Link', clickableLink);
-    logDebug('template', template);
-    logDebug('ca', ca);
-
-    const sendEmailAsync = async () => {
-      logDebug('*** sendEmail user in setTimeout *** ');
-      // send email to user for onboarding
-      const emailNameKey = Object.keys(createUser.userData).find((key) => ['nome', 'name', 'nombre'].includes(key.toLowerCase())) || '';
-
-      await sendEmailInviteUser(from, input.email, {
-        // FIXME: change clickableLink, for we will use the photo
-        link: createUser.imgArray?.[0], // clickableLink,
-        template: template.name,
-        ca: ca.name,
-        name: createUser.userData[emailNameKey],
-        lang: template.lang,
-        qrCode,
-      });
-    };
-    setTimeout(sendEmailAsync, (Math.floor(Math.random() * 6) + 2) * 1000);
-
-    return {
-      data: {
-        mgs: 'invite was send',
-        inviteId: inviteId._id,
-      },
-    };
-  } catch (ex) {
-    logError('Error Issuing user credentials ', ex);
-    throw ex;
-  }
-};
-
+//* * create invite for user! */
 const getUserById = async (input) => {
   try {
     logDebug('********** GetUserById 2 *********** ', input.userId);
 
     const user = await DB.findOne(DataBaseSchemas.USER, { _id: input.userId }, null, null);
 
-    logDebug('USers :  ', user);
+    logDebug('Users: ', user);
     if (!user) {
       throw new Error('There is no user for these invite ID');
     }
@@ -288,7 +232,7 @@ const getUserById = async (input) => {
         ...user.toObject(),
         ca_name: ca.name,
         template_name: template.name,
-        img_url: ca.img_url,
+        img_url: ca.imgUrl,
         frontendProps: template.frontendProps,
         template_itens: await listTemplateItens(user.tid),
         userInfractions,
@@ -311,6 +255,7 @@ const getUserByInvite = async (input) => {
     }
 
     const user = await DB.findOne(DataBaseSchemas.USER, { _id: invite.data.userId }, '', null);
+    logDebug('Users :  ', user);
     if (!user) {
       throw new Error('There is no user for these invite ID');
     }
@@ -322,7 +267,7 @@ const getUserByInvite = async (input) => {
         ...user.toObject(),
         ca_name: ca.name,
         template_name: template.name,
-        img_url: ca.img_url,
+        img_url: ca.imgUrl,
         frontendProps: template.frontendProps,
         template_itens: await listTemplateItens(invite.data.tid),
       },
@@ -353,5 +298,5 @@ const updateUser = async (userId, data) => {
 };
 
 module.exports = {
-  inviteNewUser, getUserByInvite, getUserById, updateUser, createNewUser,
+  getUserByInvite, getUserById, updateUser, createNewUser, createNewUserWrapper,
 };

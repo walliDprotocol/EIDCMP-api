@@ -25,6 +25,7 @@ enum EnvEnum {
   SEND_GRID_API_KEY = 'SEND_GRID_API_KEY',
   EMAIL_SENDER = 'EMAIL_SENDER',
   USER_INVITE = 'USER_INVITE',
+  ADMIN_INVITE = 'ADMIN_INVITE',
 
   FRONTEND_URL = 'FRONTEND_URL',
   GOOGLE_CLIENT_ID = 'GOOGLE_CLIENT_ID',
@@ -133,6 +134,11 @@ const env = {
   },
   USER_INVITE: {
     env: 'USER_INVITE',
+    type: 'string',
+    required: true,
+  },
+  ADMIN_INVITE: {
+    env: 'ADMIN_INVITE',
     type: 'string',
     required: true,
   },

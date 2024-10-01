@@ -1,25 +1,21 @@
 import { DataBaseSchemas } from 'src/types/enums';
 import config from 'src/config';
+import { sendDemoInviteEmail } from 'src/services/mailer';
+import { createNewUserWrapper } from 'src/services/user';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:admin');
 
 const { DB } = require('src/database');
 
 const { EMAIL_SENDER: from, DOMAIN_ENV } = config;
-const { inviteNewUser } = require('src/services/user');
 const { listTemplateItens } = require('src/services/templateItem');
 const { randomCode } = require('src/services/utils');
 
-const {
-  //  sendEmailNotifyRevoke,
-  inviteEmailForDemo,
-} = require('src/services/mailer');
-
-const createDemoInvite = async (input) => {
+const createDemoInvite = async (input: { email: string; name: string; }) => {
   logDebug('createDemoInvite :  ', input);
   const email = input.email.trim() || '';
   const name = input.name.trim() || '';
-  let clickableLink = `${DOMAIN_ENV}/?invite_admin=`;
+  let clickableLink = `${DOMAIN_ENV}/?demoInvite=`;
 
   // create invite
   const inviteData = {
@@ -54,14 +50,20 @@ const createDemoInvite = async (input) => {
   logDebug('After update Billing', updatedBilling);
 
   // send email with invite
-  await inviteEmailForDemo(from, input.email, {
-    link: clickableLink, template: 'NO_TEMPLATE', ca: 'NO_CA', name, lang: 'en',
+  await sendDemoInviteEmail({
+    from,
+    to: input.email,
+    link: clickableLink,
+    templateName: 'NO_TEMPLATE',
+    caName: 'NO_CA',
+    name,
+    lang: 'en',
   });
 
   return { code: 200, mgs: (`email have been send with sucess ${clickableLink}`) };
 };
 
-const prepareImportData = async (templateItens, userData, tid, table_values) => {
+const prepareImportData = async (templateItens: any[], userData: { [s: string]: string; } | ArrayLike<string>, tid: any, table_values: string | any[]) => {
   logDebug('*********  prepareImportData ******* ', templateItens, userData);
 
   const userDataPrepared = [];
@@ -91,7 +93,7 @@ const prepareImportData = async (templateItens, userData, tid, table_values) => 
         }
       });
       logDebug('containProperty ', containProperty);
-      if (!containProperty && (elem.isMandatory === 'true' || elem.isMandatory === true)) {
+      if (!val && (elem.isMandatory === 'true' || elem.isMandatory === true)) {
         // logDebug('User data Key ', key, ' value ', value);
         logError(`There is no attr ${elem.attr.toLowerCase()} in template item for template id ${tid}`);
         throw new Error(`There is no attr ${elem.attr.toLowerCase()} in template item for template id ${tid}`);
@@ -130,7 +132,7 @@ const prepareImportData = async (templateItens, userData, tid, table_values) => 
  *  2. Import data
  *
  */
-const importMultiData = async (input) => {
+const importMultiData = async (input: { tid: any; import_data: any[]; cid: any; waAdmin: any; }, WaltIdConfig: any) => {
   logDebug('Import multi Data :  ', input);
   // TODO check if the waAdmin is admin
   // loop to import dada call indivually the newinvite data
@@ -143,7 +145,7 @@ const importMultiData = async (input) => {
       const userData = await prepareImportData(templateItens, elem.userData, input.tid, elem.table_values || []);
       const email = elem.email || elem.Email || elem['e-mail'];
 
-      await inviteNewUser(
+      await createNewUserWrapper(
         {
           tid: input.tid,
           cid: input.cid,
@@ -151,6 +153,7 @@ const importMultiData = async (input) => {
           waAdmin: input.waAdmin,
           email,
           data: userData,
+          WaltIdConfig,
         },
       );
     }),
@@ -162,7 +165,7 @@ const importMultiData = async (input) => {
 /**
  * Validate data when file was parsed
  */
-const validateParseFile = async (elements, tid) => {
+const validateParseFile = async (elements: any[], tid: number) => {
   logDebug(' *** validateParseFile *** | Number of parsed element #', elements.length);
   const templateItens = await listTemplateItens(tid);
   const result = await Promise.all(
@@ -171,7 +174,7 @@ const validateParseFile = async (elements, tid) => {
   return result;
 };
 
-const revokeUser = async (data) => {
+const revokeUser = async (data: { waAdmin?: any; id: any; tid: any; cid?: any; revokeSig?: any; }) => {
   logDebug(' ********* BL:Revoke User (sign user data) ***********');
 
   try {
@@ -195,9 +198,10 @@ const revokeUser = async (data) => {
     /**
      * Update database revoke status
      */
-    const updateBody = {};
-    updateBody.status = 'revoke';
-    updateBody.revoke_sig = data.revokeSig;
+    const updateBody = {
+      status: 'revoke',
+      revoke_sig: data.revokeSig,
+    };
     // update user status and user signature
     const updateUser = await DB.findOneAndUpdate(DataBaseSchemas.USER, { _id: data.id, tid: data.tid }, updateBody, { new: true });
 
@@ -217,7 +221,7 @@ const revokeUser = async (data) => {
 /**
  * To do if there is an invite from wallid team! doesnt update the status of invite
  */
-const acceptOnboardingInvite = async (id, wa) => {
+const acceptOnboardingInvite = async (id: any, wa: any) => {
   const invite = await DB.findOne(DataBaseSchemas.PENDING_INVITES, { _id: id });
 
   if (!invite) {
@@ -239,7 +243,7 @@ const acceptOnboardingInvite = async (id, wa) => {
   return { data: {}, mgs: 'Invite was accepted' };
 };
 
-const caBillingStatus = async (ca_id, leftTemplates, leftCredentials) => {
+const caBillingStatus = async (ca_id: any, leftTemplates: string, leftCredentials: string) => {
   const templates = await DB.find(DataBaseSchemas.TEMPLATE, { cid: ca_id });
   const users = await DB.find(DataBaseSchemas.USER, { cid: ca_id });
 
@@ -253,7 +257,7 @@ const caBillingStatus = async (ca_id, leftTemplates, leftCredentials) => {
   };
 };
 
-const getAdminProfile = async (wa) => {
+const getAdminProfile = async (wa: any) => {
   let admin = await DB.findOne(DataBaseSchemas.ADMIN, { wa }, '-_id -createdAt -updatedAt');
 
   if (!admin) {
@@ -262,7 +266,8 @@ const getAdminProfile = async (wa) => {
 
   const dca = await DB.findOne(DataBaseSchemas.CA, { creatorWA: wa }, ' -createdAt -updatedAt');
 
-  const billing = { balances: [], no_dca: false };
+  const balances: any = [];
+  let hasDCA = false;
 
   if (!dca) {
     logDebug('No dca found for admin ', wa);
@@ -270,22 +275,40 @@ const getAdminProfile = async (wa) => {
   }
 
   if (dca.contract_address === '0x99999999') {
-    const balances = await DB.findOne(DataBaseSchemas.BILLING, { owner_wallet: wa }, '-_id -owner_email -owner_wallet');
-    billing.balances.push({
+    const balancesResponse = await DB.findOne(DataBaseSchemas.BILLING, { owner_wallet: wa }, '-_id -owner_email -owner_wallet');
+    balances.push({
       address: dca.contract_address,
-      balances: await caBillingStatus(dca._id.toHexString(), balances.create_template, balances.revoke_user),
+      balances: await caBillingStatus(dca._id.toHexString(), balancesResponse.create_template, balancesResponse.revoke_user),
     });
-    billing.no_dca = true;
+    hasDCA = true;
   }
 
   if (admin) {
     admin = admin.toObject();
-    admin.balances = billing.balances;
-    admin.no_dca = billing.no_dca;
+    admin.balances = balances;
+    admin.no_dca = hasDCA;
   }
 
   return admin;
 };
+
+// TODO: need to be refactored
+async function updateBilling(contractAddress: string, balances: any) {
+  try {
+    const dca = await DB.findOne(DataBaseSchemas.CA, { contractAddress }, ' -createdAt -updatedAt');
+    if (!dca) {
+      throw new Error('No dca found for this address');
+    }
+
+    if (dca.contract_address === '0x99999999') {
+      return balances;
+    }
+    return balances;
+  } catch (error) {
+    logError(error);
+    throw error;
+  }
+}
 
 export {
   revokeUser,
@@ -293,5 +316,5 @@ export {
   acceptOnboardingInvite,
   getAdminProfile,
   validateParseFile,
-  createDemoInvite,
+  createDemoInvite, updateBilling,
 };

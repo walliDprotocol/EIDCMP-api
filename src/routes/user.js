@@ -1,43 +1,12 @@
 const express = require('express');
 const {
-  inviteNewUser, getUserByInvite, getUserById,
+  getUserByInvite, getUserById,
   updateUser,
 } = require('src/services/user');
 
 const router = new express.Router();
 const validator = require('src/core-services/parameterValidator');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:user');
-
-const PARAMETERS = ['cid', 'tid', 'waAdmin', 'email', 'data'];
-
-/**
- * Create User
- */
-router.post('/', async (request, response) => {
-  logDebug('  **  create user data  **  ');
-
-  try {
-    const {
-      cid, tid, waAdmin, data, email,
-    } = validator(request.body, PARAMETERS);
-    const result = await inviteNewUser({
-      cid,
-      tid,
-      waAdmin,
-      data,
-      email,
-      imgArray: request.body.imgArray
-      ,
-    });
-
-    response.status(200).json(result);
-  } catch (error) {
-    logError('router:create template ', error);
-
-    response.status(500)
-      .json({ data: null, message: error.message || 'Internal server error' });
-  }
-});
 
 router.get('/', async (request, response) => {
   logDebug('  **** RT:GetUserByInvite *****  ', request.query);

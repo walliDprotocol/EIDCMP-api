@@ -7,7 +7,7 @@ import * as crypto from 'crypto';
 
 import { ErrorType, errors } from 'src/constants';
 
-const { WRONG_USERNAME_PASSWORD, INVALID_INVITE } = ErrorType;
+const { WRONG_USERNAME_PASSWORD, INVALID_INVITE, DEFAULT_LOGIN_ERROR } = ErrorType;
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('service:auth');
 const { issueJWT } = require('src/lib/jwt');
@@ -193,7 +193,7 @@ export const loginUser = async (data: any) => {
     if (ex instanceof Error) {
       throw new Error(ex.message);
     }
-    throw new Error(errors.DEFAULT_LOGIN_ERROR);
+    throw new Error(DEFAULT_LOGIN_ERROR);
   }
 };
 

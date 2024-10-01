@@ -87,7 +87,8 @@ export const sendAdminInvite = async function (fromEmail: string, to: string, de
     .replaceAll('##CANAME##', details.caName)
     .replace('##CLICK_URL##', link)
     .replace('##_TITLE_##', title)
-    .replace('##EMAIL##', fromEmail);
+    .replace('##EMAIL##', fromEmail)
+    .replace('##NAME##', details.name);
 
   await sendMail(from, to, subject, message);
 

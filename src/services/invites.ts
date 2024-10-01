@@ -16,13 +16,17 @@ export async function createAdminInviteAndSend(from: string, to: string, name:st
 
   if (!masterAdmin._id || newAdmin?._id) throw new Error(`No admin ${from} found with right permissions, or ${to} is already admin`);
 
-  const inviteDetails = await DB.create(DataBaseSchemas.PENDING_INVITES, { from, to, type: 'governance' });
-  logDebug(inviteDetails);
+  const caDetails = await DB.findOne(DataBaseSchemas.CA, { admin: masterAdmin.wa }, ['name', 'cid']);
+  logDebug('caDetails:id', caDetails.toJSON().cid, caDetails.toJSON().name, caDetails.toJSON().cid);
 
-  const details = await DB.findOne(DataBaseSchemas.CA, { admin: masterAdmin.wa }, 'name');
-  logDebug(details);
+  const inviteDetails = await DB.create(DataBaseSchemas.PENDING_INVITES, {
+    from, to, type: 'governance', data: { cid: caDetails.toJSON().cid, name },
+  });
+  logDebug('inviteDetails', inviteDetails);
+
+  logDebug('caDetails', caDetails);
   return sendAdminInvite(masterAdmin.email, to, {
-    inviteId: inviteDetails._id, caName: details.name, name, lang: masterAdmin.lang,
+    inviteId: inviteDetails._id, caName: caDetails.name, name, lang: masterAdmin.lang,
   });
 }
 

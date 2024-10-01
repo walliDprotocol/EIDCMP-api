@@ -4,19 +4,27 @@ import { issueTokenForUser, loginUser, userProfile } from 'src/services/auth';
 import config from 'src/config';
 import passport from 'passport';
 
-const { ALLOW_REGISTER, GOOGLE_CALLBACK_URL } = config;
+const {
+  ALLOW_REGISTER,
+  // GOOGLE_CALLBACK_URL,
+} = config;
 
-const { registerUser } = require('src/services/auth');
+const { registerUser, registerUserAdminInvite } = require('src/services/auth');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:auth');
 
 const router = Router();
 
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/signup', async (req: Request, res: Response) => {
   if (!ALLOW_REGISTER) return res.status(403).json({ error: 'Register currently disabled' });
   try {
     logDebug(' **** register route **** ');
     const params = ['username', 'password', 'email'];
     parameterValidator(req.body, params);
+
+    if (req.body.adminInvite) {
+      const newUser = await registerUserAdminInvite(req.body);
+      return res.json({ user: newUser });
+    }
 
     const newUser = await registerUser(req.body);
     return res.json({ user: newUser });

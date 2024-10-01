@@ -6,7 +6,7 @@ import passport from 'passport';
 
 const {
   ALLOW_REGISTER,
-  // GOOGLE_CALLBACK_URL,
+  GOOGLE_CALLBACK_URL,
 } = config;
 
 const { registerUser, registerUserAdminInvite } = require('src/services/auth');

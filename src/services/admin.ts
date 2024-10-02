@@ -286,7 +286,7 @@ const getAdminProfile = async (wa: any) => {
   if (admin) {
     admin = admin.toObject();
     admin.balances = balances;
-    admin.no_dca = hasDCA;
+    admin.hasDCA = hasDCA;
   }
 
   return admin;

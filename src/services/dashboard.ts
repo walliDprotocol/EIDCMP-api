@@ -1,5 +1,7 @@
 // eslint-disable-next-line arrow-body-style
 
+import { TemplateItem } from 'src/types';
+
 const { DataBaseSchemas } = require('src/types/enums');
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:dashboard');
@@ -8,7 +10,7 @@ const { DB } = require('src/database');
 const { listTemplateItens } = require('src/services/templateItem');
 const { listUsersTaggedByStatus } = require('src/services/template');
 
-const listCAbyAdmin = async (wa) => {
+const listCAbyAdmin = async (wa: any) => {
   logDebug(' ********* list CA by Admins ***********');
 
   try {
@@ -27,7 +29,25 @@ const listCAbyAdmin = async (wa) => {
   }
 };
 
-const listTemplateByAdmin = async (wa) => {
+const listTemplateByCid = async (cid: any) => {
+  logDebug(' ********* list templates by Cid ***********');
+
+  try {
+    const criteria = { cid };
+    const output = await DB.find(DataBaseSchemas.TEMPLATE, criteria);
+
+    if (!output || output.length <= 0) {
+      logError('There is no template for that user!');
+      return [];
+    }
+    return output;
+  } catch (ex) {
+    logError('Error create template');
+    throw ex;
+  }
+};
+
+const listTemplateByAdmin = async (wa: any) => {
   logDebug(' ********* list templates by Admins ***********');
 
   try {
@@ -45,39 +65,40 @@ const listTemplateByAdmin = async (wa) => {
   }
 };
 
-const getDashboard = async (wa) => {
+const getDashboard = async (wa: any, filter: 'wa' | 'cid') => {
   try {
     logDebug('**** services Dashboard **** ', wa);
 
-    const responseTemplate = {
-      ca_name: '',
-      ca_creator: '',
-      templates: [
-        // {
-        //   name : "template number 1",
-        //   users : {
-        // waiting_wallet : [],
-        // pending_approval : [],
-        // revoke : [],
-        // ative : []
-        //   }
-        // }
-      ],
+    const responseTemplate: {
+      caName: string;
+      creatorWA: string;
+      templates: TemplateItem[];
+      cid: string;
+      contractAddress: string;
+      imgUrl: string;
+    } = {
+      caName: '',
+      creatorWA: '',
+      templates: [],
+      cid: '',
+      contractAddress: '',
+      imgUrl: '',
     };
 
     const caItem = await listCAbyAdmin(wa);
-    responseTemplate.cid = caItem._id;
-    responseTemplate.ca_name = caItem.name;
-    responseTemplate.contract_address = caItem.contract_address || '0x99999999';
 
-    responseTemplate.ca_creator = caItem.creatorWA;
+    responseTemplate.cid = caItem._id;
+    responseTemplate.caName = caItem.name;
+    responseTemplate.contractAddress = caItem.contractAddress || caItem.contract_address || '0x99999999';
+
+    responseTemplate.creatorWA = caItem.creatorWA;
     responseTemplate.imgUrl = caItem.imgUrl;
 
     logDebug('**** listTemplateByAdmin **** ');
-    const templateItem = await listTemplateByAdmin(wa);
+    const templateItem = filter === 'wa' ? await listTemplateByAdmin(wa) : await listTemplateByCid(caItem.cid);
 
     //
-    await Promise.all(templateItem.map(async (elem) => {
+    await Promise.all(templateItem.map(async (elem: { _id: { toHexString: () => any; }; name: any; frontendProps: any; excelTemplate: any; }) => {
       const templateItens = await listTemplateItens(elem._id.toHexString());
       const templateUsersByStatus = await listUsersTaggedByStatus({ tid: elem._id.toHexString() });
 
@@ -100,4 +121,4 @@ const getDashboard = async (wa) => {
   }
 };
 
-module.exports = { listCAbyAdmin, listTemplateByAdmin, getDashboard };
+export { getDashboard, listCAbyAdmin, listTemplateByAdmin };

@@ -48,4 +48,24 @@ const updateCA = async (data) => {
   }
 };
 
-module.exports = { createCA, updateCA };
+const getAdminsList = async ({ cid }) => {
+  logDebug(' ********* Get Admins List *********** ', cid);
+  const ca = await DB.findOne(DataBaseSchemas.CA, { _id: cid }, '', {});
+
+  if (!ca) {
+    throw new Error('CA not found');
+  }
+
+  if (!ca.admin) {
+    throw new Error('CA has no admins');
+  }
+  logDebug('ca', ca);
+
+  const admins = await DB.find(DataBaseSchemas.ADMIN, { wa: { $in: ca.admin } }, 'roles wa username email status', {});
+
+  logDebug('admins', admins);
+
+  return { owners: admins.filter((a) => a.roles.includes('owner')), managers: admins.filter((a) => a.roles.includes('manager')) };
+};
+
+module.exports = { createCA, updateCA, getAdminsList };

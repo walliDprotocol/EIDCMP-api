@@ -2,9 +2,9 @@ const { DB } = require('src/database');
 const { DataBaseSchemas } = require('src/types/enums');
 
 const express = require('express');
-const { createCA, updateCA } = require('src/services/ca');
+const { createCA, updateCA, getAdminsList } = require('src/services/ca');
 const validator = require('src/core-services/parameterValidator');
-const { logError } = require('src/core-services/logFunctionFactory').getLogger('router:ca');
+const { logError, logDebug } = require('src/core-services/logFunctionFactory').getLogger('router:ca');
 
 const router = new express.Router();
 const UPDATE_CA_PARAMETERS = ['name', 'imgUrl', 'cid'];
@@ -54,6 +54,18 @@ router.post('/getca', async (request, response) => {
   } catch (error) {
     logError(' router: get CA', error);
     response.status(404).json({ data: null, message: error.message || 'Internal server error' });
+  }
+});
+
+router.get('/admins', async (request, response) => {
+  try {
+    const { cid } = validator(request.query, GET_CA_PARAMETERS);
+
+    const adminsList = await getAdminsList({ cid });
+    logDebug('adminsList', adminsList);
+    response.status(200).json(adminsList);
+  } catch (error) {
+    logError(' router: get CA', error);
   }
 });
 

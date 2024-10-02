@@ -63,6 +63,7 @@ export interface TemplateItem {
   excelTemplate: string;
   templateItens: any;
   users: any;
+  createdAt: string
 }
 
 export * from './schemas';

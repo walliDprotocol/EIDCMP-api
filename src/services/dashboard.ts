@@ -98,7 +98,9 @@ const getDashboard = async (wa: any, filter: 'wa' | 'cid') => {
     const templateItem = filter === 'wa' ? await listTemplateByAdmin(wa) : await listTemplateByCid(caItem.cid);
 
     //
-    await Promise.all(templateItem.map(async (elem: { _id: { toHexString: () => any; }; name: any; frontendProps: any; excelTemplate: any; }) => {
+    await Promise.all(templateItem.map(async (elem: { _id: { toHexString: () => any; }; name: any; frontendProps: any;
+      excelTemplate: any; createdAt: string; }) => {
+      logDebug('**** listTemplateByAdmin **** ', elem);
       const templateItens = await listTemplateItens(elem._id.toHexString());
       const templateUsersByStatus = await listUsersTaggedByStatus({ tid: elem._id.toHexString() });
 
@@ -110,6 +112,7 @@ const getDashboard = async (wa: any, filter: 'wa' | 'cid') => {
         excelTemplate: elem.excelTemplate || 'NA',
         templateItens,
         users: templateUsersByStatus,
+        createdAt: elem.createdAt,
       });
       return '';
     }));

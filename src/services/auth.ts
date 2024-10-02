@@ -5,7 +5,7 @@ import { filterObject } from 'src/lib/util';
 import { DataBaseSchemas, OAuthTypes } from 'src/types/enums';
 import * as crypto from 'crypto';
 
-import { ErrorType, errors } from 'src/constants';
+import { ErrorType } from 'src/constants';
 
 const { WRONG_USERNAME_PASSWORD, INVALID_INVITE, DEFAULT_LOGIN_ERROR } = ErrorType;
 
@@ -42,7 +42,7 @@ export const registerUserAdminInvite = async ({
   logDebug('********* registerUser **********', username, password, email);
   try {
     const adminInviteResult = await DB.findOne(DataBaseSchemas.PENDING_INVITES, { _id: adminInvite });
-    logDebug('Created adminInviteResult', adminInviteResult.toJSON(), errors.INVALID_INVITE);
+    logDebug('Created adminInviteResult', adminInviteResult.toJSON(), INVALID_INVITE);
 
     if (!adminInviteResult) {
       throw new Error(INVALID_INVITE);

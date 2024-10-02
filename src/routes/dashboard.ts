@@ -1,17 +1,19 @@
-const express = require('express');
+import express, { Request, Response } from 'express';
+
 const { getDashboard } = require('src/services/dashboard');
 const validator = require('src/core-services/parameterValidator');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:dashboard');
 
-const router = new express.Router();
+const router = express.Router();
+
 const PARAMETERS = ['wa'];
 
-router.post('/', async (request, response) => {
+router.post('/', async (request: Request, response: Response) => {
   try {
     response.status(200).json({
       message: 'toma ze',
     });
-  } catch (error) {
+  } catch (error: any) {
     logError('router:create CA ', error);
 
     response.status(error.code || 500)
@@ -19,7 +21,7 @@ router.post('/', async (request, response) => {
   }
 });
 
-router.get('/', async (request, response) => {
+router.get('/', async (request: Request, response: Response) => {
   logDebug('query string ', request.query);
   const { wa } = validator(request.query, PARAMETERS);
 
@@ -29,7 +31,7 @@ router.get('/', async (request, response) => {
       message: '',
       data: result,
     });
-  } catch (error) {
+  } catch (error:any) {
     logError('router:create CA ', error);
 
     response.status(error.code || 500)
@@ -37,4 +39,4 @@ router.get('/', async (request, response) => {
   }
 });
 
-module.exports = router;
+export default router;

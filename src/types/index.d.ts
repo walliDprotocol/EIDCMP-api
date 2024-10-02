@@ -55,4 +55,14 @@ export type CredentialTemplateType = {
   frontendProps: any;
 };
 
+export interface TemplateItem {
+  name: string;
+  tid: string;
+  cid: string;
+  frontendProps: any;
+  excelTemplate: string;
+  templateItens: any;
+  users: any;
+}
+
 export * from './schemas';

@@ -6,7 +6,7 @@ const { logDebug, logError } = require('src/core-services/logFunctionFactory').g
 
 const router = express.Router();
 
-const PARAMETERS = ['cid', 'name', 'wa', 'frontendProps', 'frontendProps.components', 'frontendProps.currentLayout', 'frontendProps.backgroundFront'];
+const PARAMETERS = ['cid', 'name', 'wa', 'frontendProps', 'frontendProps.components', 'frontendProps.currentLayout', 'frontendProps'];
 
 router.post('/', async (request: Request, response: Response) => {
   logDebug('  ***  create template  ***  ');

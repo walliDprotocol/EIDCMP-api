@@ -1,8 +1,13 @@
 import { Router, Request, Response } from 'express';
 import parameterValidator from 'src/core-services/parameterValidator';
-import { issueTokenForUser, loginUser, userProfile } from 'src/services/auth';
+import {
+  issueTokenForUser, loginUser, userProfile, issueApiToken, registerApiToken,
+} from 'src/services/auth';
+import { filterObject } from 'src/lib/util';
+
 import config from 'src/config';
 import passport from 'passport';
+import { issueJWT, verifyJWT } from 'src/lib/jwt';
 
 const {
   ALLOW_REGISTER,
@@ -75,5 +80,46 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
 });
 
 router.get('/google/login', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+router.get('/gen-key', async (req: Request, res: Response) => {
+  try {
+    logDebug(' **** Auth token route **** ');
+    const { user } = req;
+    const { name = 'Default Name' } = req.query as unknown as { name: string };
+    logDebug(' ****name ****', name);
+    logDebug(' ****user ****', user);
+
+    const filter = ['id', 'username', 'email'];
+    const userFiltered = filterObject(user as unknown as Record<string, unknown>, filter);
+    logDebug(' ****user **** after', userFiltered);
+
+    const { token } = await issueApiToken();
+
+    const jwtPayload = {
+      id: userFiltered.id,
+      token,
+    };
+    const { token: jwt } = await issueJWT(userFiltered.id as string, jwtPayload, '999years');
+    logDebug('jwt', jwt);
+
+    const result = await registerApiToken(user?.id, token, jwt, name);
+    logDebug('result', result);
+
+    const verify = await verifyJWT(jwt);
+    logDebug('verify', verify);
+    if (!verify) {
+      res.status(401).json('Unauthorized');
+    }
+
+    res.json({
+      token,
+      jwt,
+      name,
+    });
+  } catch (ex) {
+    logError('/gen-key ', ex);
+    res.status(500).json({ error: ex });
+  }
+});
 
 export default router;

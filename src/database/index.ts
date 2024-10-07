@@ -36,6 +36,9 @@ const Database: DataBase = {
   updateOne: (schema: DataBaseSchemas, filter: any, update: any, options: any) => mongoDB[schema].updateOne(filter, update, options),
   remove: (schema: DataBaseSchemas, filter: any, options: any) => mongoDB[schema].findOneAndDelete(filter, options),
   removeAll: (schema: DataBaseSchemas, filter: any, options: any) => mongoDB[schema].deleteMany(filter, options),
+
+  createTokenMap: (data: any, options: any) => mongoDB.token.create(data, options),
+
 };
 
 export default Database;

@@ -1,0 +1,2 @@
+import{a3 as e,a4 as o,a5 as s}from"./vue-BAjJ74_5.js";import{_ as t}from"./index-BsrjhtPE.js";import"./vuetify-B6yzhMeP.js";/* empty css                            */const a={},c={class:"about"},r=s("h1",null,"This is an about page",-1),_=[r];function n(i,u){return e(),o("div",c,[..._])}const f=t(a,[["render",n],["__file","C:/Users/guilh/Documents/EIDCMP/web-app-v3/src/views/About.vue"]]);export{f as default};
+//# sourceMappingURL=About-BcrLpdG2.js.map

@@ -4,5 +4,4 @@
 
 Build for demo #2
 
-demo build
 build

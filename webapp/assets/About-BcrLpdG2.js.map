@@ -1,0 +1,1 @@
+{"version":3,"file":"About-BcrLpdG2.js","sources":["../../src/views/About.vue"],"sourcesContent":["<template>\r\n  <div class=\"about\">\r\n    <h1>This is an about page</h1>\r\n  </div>\r\n</template>\r\n"],"names":["_hoisted_1","_hoisted_3","_cache"],"mappings":"kLAEIA,EAAA,CAAA,MAAA,OAAA,4CAA8BC,EAAA,iBAC1BC,EAAA"}

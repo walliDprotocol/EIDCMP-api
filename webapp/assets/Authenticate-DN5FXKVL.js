@@ -1,0 +1,2 @@
+import{_ as e,A as o}from"./index-BsrjhtPE.js";import{a3 as s,a4 as a}from"./vue-BAjJ74_5.js";import"./vuetify-B6yzhMeP.js";/* empty css                            */const r={async created(){const t=this.$route.params.token;await this.$store.dispatch(o,{token:t}),this.$router.push("/Dashboard")}};function c(t,n,i,p,u,h){return s(),a("div",null,"Authenticating...")}const f=e(r,[["render",c],["__file","C:/Users/guilh/Documents/EIDCMP/web-app-v3/src/views/Authenticate.vue"]]);export{f as default};
+//# sourceMappingURL=Authenticate-DN5FXKVL.js.map

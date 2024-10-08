@@ -132,7 +132,7 @@ const prepareImportData = async (templateItens: any[], userData: { [s: string]: 
  *  2. Import data
  *
  */
-const importMultiData = async (input: { tid: any; import_data: any[]; cid: any; waAdmin: any; }, WaltIdConfig: any) => {
+const importMultiData = async (input: { tid: any; import_data: any[]; cid: any; waAdmin: any; }) => {
   logDebug('Import multi Data :  ', input);
   // TODO check if the waAdmin is admin
   // loop to import dada call indivually the newinvite data
@@ -153,7 +153,6 @@ const importMultiData = async (input: { tid: any; import_data: any[]; cid: any; 
           waAdmin: input.waAdmin,
           email,
           data: userData,
-          WaltIdConfig,
         },
       );
     }),

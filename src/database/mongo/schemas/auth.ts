@@ -1,7 +1,6 @@
 import { Document, Schema } from 'mongoose';
 import { TokenEntry } from 'src/types/auth';
-
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 const TokenEntrySchema = new Schema<TokenEntry & Document>({
   id: { type: String, required: true },
@@ -47,7 +46,7 @@ AuthSchema.methods.verifyPassword = function verifyPassword(pw:string) {
 };
 
 AuthSchema.methods.setPassword = function setPassword(pw: string) {
-  this.password = bcrypt.hashSync(pw, bcrypt.genSaltSync(10), null);
+  this.password = bcrypt.hashSync(pw, bcrypt.genSaltSync(10));
 };
 
 AuthSchema.set('toJSON', {

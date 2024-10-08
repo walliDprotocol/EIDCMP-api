@@ -189,6 +189,7 @@ export const registerUser = async (data: any) => {
         wa: walletAddress,
         email: data.email,
         username: data.username,
+        roles: ['admin'],
       };
       logDebug('admin', admin);
       const adminEntry = await DB.findOneAndUpdate(

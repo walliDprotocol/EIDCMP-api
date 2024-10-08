@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+import type { Express, Locals } from 'express';
 
 const { logDebug } = require('src/core-services/logFunctionFactory').getLogger('lib:waltid');
 
@@ -6,7 +6,7 @@ const WALT_ID_API_URL = 'https://issuer.portal.walt.id';
 
 const GENERATE_KEY_PAIR = '/onboard/issuer';
 
-async function createKeyPair() {
+export async function createKeyPair() : Promise<Locals['WaltIdConfig']> {
   logDebug('createKeyPair');
 
   const body = {

@@ -25,6 +25,13 @@ router.get('/:fileId', async (req, res) => {
     const fileIdObjectId = new ObjectId(fileId);
     logDebug('fileIdObjectId', fileIdObjectId);
     const { db } = mongoose.connection;
+
+    if (!db) {
+      return res.status(500).json({
+        error: 'No database connection',
+      });
+    }
+
     const bucket = new GridFSBucket(db, {
       bucketName: 'uploads',
     });
@@ -57,6 +64,11 @@ router.get('/template/:fileId', async (req, res) => {
   try {
     const fileIdObjectId = new ObjectId(fileId);
     const { db } = mongoose.connection;
+    if (!db) {
+      return res.status(500).json({
+        error: 'No database connection',
+      });
+    }
     const bucket = new GridFSBucket(db, {
       bucketName: 'uploads',
     });

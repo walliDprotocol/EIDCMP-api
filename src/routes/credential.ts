@@ -4,6 +4,8 @@ import { createNewUser } from 'src/services/user';
 import { createCredentialOfferUrl } from 'src/services/credential';
 import { sendEmailInviteUser } from 'src/services/mailer';
 import { UserCredentialType } from 'src/types';
+import { DataBaseSchemas } from 'src/types/enums';
+import { DB } from 'src/database';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:credential');
 
@@ -36,10 +38,12 @@ router.post('/create', async (req, res) => {
     });
 
     logDebug('result', newUser);
+    const caIssuerKey = await DB.findOne(DataBaseSchemas.CA, { _id: cid }, 'issuerKey issuerDid', null);
 
+    logDebug('caDID', caIssuerKey);
     const body = {
-      issuerKey: req.app.locals.WaltIdConfig.issuerKey,
-      issuerDid: req.app.locals.WaltIdConfig.issuerDid,
+      issuerKey: caIssuerKey.issuerKey,
+      issuerDid: caIssuerKey.issuerDid,
       credentialConfigurationId: `${req.body.credentialConfigurationId}_jwt_vc_json`,
       credentialData: {
         '@context': [

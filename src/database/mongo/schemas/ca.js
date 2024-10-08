@@ -24,6 +24,8 @@ const CaSchema = new Schema(
     },
     imgUrl: String,
     admin: [String],
+    issuerKey: Object,
+    issuerDid: String,
   },
   { collection: 'certAuthority', versionKey: false },
 );

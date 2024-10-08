@@ -65,7 +65,7 @@ router.post('/create', async (req, res) => {
 
     // Invite the user via email
 
-    const resultInvite = await sendEmailInviteUser(newUser, { ...credencialIssuerDetails, waAdmin });
+    const resultInvite = await sendEmailInviteUser(newUser, { ...credencialIssuerDetails, waAdmin, credentialUrl });
 
     logDebug('result', resultInvite);
 

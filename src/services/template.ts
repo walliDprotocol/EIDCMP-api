@@ -49,6 +49,18 @@ export const getTemplate = async (input: { tid: string }) => {
   }
 };
 
+export const getTemplates = async (cid?: string) => {
+  logDebug(' ********* getTemplates *********** criteria ', cid);
+
+  try {
+    const templates = await DB.find(DataBaseSchemas.TEMPLATE, { cid }, '', null);
+    return templates;
+  } catch (ex) {
+    logError('Error getTemplates');
+    throw ex;
+  }
+};
+
 export const listUsersTaggedByStatus = async (input: { tid: string }) => {
   logDebug(' ********* listUsersTaggedByStatus *********** criteria ', input);
 

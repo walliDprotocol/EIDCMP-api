@@ -19,6 +19,7 @@ const authRoutes = [
   '/api/v1/',
   '/api/v1/auth/profile',
   '/api/v1/auth/gen-key',
+  '/api/v1/auth/keys',
 ];
 const authRoutesException = [
   '/api/v1/auth/',

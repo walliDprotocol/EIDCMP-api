@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import parameterValidator from 'src/core-services/parameterValidator';
 import {
   issueTokenForUser, loginUser, userProfile, issueApiToken, registerApiToken,
+  getKeys,
 } from 'src/services/auth';
 import { filterObject } from 'src/lib/util';
 
@@ -118,6 +119,18 @@ router.get('/gen-key', async (req: Request, res: Response) => {
     });
   } catch (ex) {
     logError('/gen-key ', ex);
+    res.status(500).json({ error: ex });
+  }
+});
+
+router.get('/keys', async (req: Request, res: Response) => {
+  try {
+    const { user } = req;
+    logDebug(' **** keys route **** ', user);
+    const result = await getKeys(user?.id);
+    res.json(result);
+  } catch (ex) {
+    logError('/keys ', ex);
     res.status(500).json({ error: ex });
   }
 });

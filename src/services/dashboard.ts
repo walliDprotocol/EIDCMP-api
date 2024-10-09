@@ -69,6 +69,7 @@ const getDashboard = async (wa: any, filter: 'wa' | 'cid') => {
   try {
     logDebug('**** services Dashboard **** ', wa);
 
+    const caItem = await listCAbyAdmin(wa);
     const responseTemplate: {
       caName: string;
       creatorWA: string;
@@ -76,23 +77,16 @@ const getDashboard = async (wa: any, filter: 'wa' | 'cid') => {
       cid: string;
       contractAddress: string;
       imgUrl: string;
+      issuerDid: string
     } = {
-      caName: '',
-      creatorWA: '',
+      caName: caItem.name,
+      creatorWA: caItem.creatorWA,
       templates: [],
-      cid: '',
-      contractAddress: '',
-      imgUrl: '',
+      cid: caItem._id,
+      contractAddress: caItem.contractAddress || caItem.contract_address || '0x99999999',
+      imgUrl: caItem.imgUrl,
+      issuerDid: caItem.issuerDid,
     };
-
-    const caItem = await listCAbyAdmin(wa);
-
-    responseTemplate.cid = caItem._id;
-    responseTemplate.caName = caItem.name;
-    responseTemplate.contractAddress = caItem.contractAddress || caItem.contract_address || '0x99999999';
-
-    responseTemplate.creatorWA = caItem.creatorWA;
-    responseTemplate.imgUrl = caItem.imgUrl;
 
     logDebug('**** listTemplateByAdmin **** ');
     const templateItem = filter === 'wa' ? await listTemplateByAdmin(wa) : await listTemplateByCid(caItem.cid);

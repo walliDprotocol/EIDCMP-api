@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import validator from 'src/core-services/parameterValidator';
 import { createNewUser } from 'src/services/user';
-import { createCredentialOfferUrl } from 'src/services/credential';
+import { createCredentialOfferUrl, createCredentialVerificationUrl } from 'src/services/credential';
 import { sendEmailInviteUser } from 'src/services/mailer';
 import { UserCredentialType } from 'src/types';
 import { DataBaseSchemas } from 'src/types/enums';
@@ -75,6 +75,25 @@ router.post('/create', async (req, res) => {
     // TODO: delete entry from db from createNewUser function call
     logError('Error inviting user: ', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/create-verify-url', async (req, res) => {
+  logDebug('  **  Create verify VC  **  ');
+
+  try {
+    const {
+      tid,
+    } = validator(req.body, ['tid']);
+
+    const response = await createCredentialVerificationUrl({ tid });
+
+    const verificationUrl = response;
+
+    res.status(200).json({ verificationUrl });
+  } catch (error:any) {
+    logError('Error creating verification url: ', error);
+    res.status(500).json({ error: error.message || error });
   }
 });
 

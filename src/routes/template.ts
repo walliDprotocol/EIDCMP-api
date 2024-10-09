@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { getTemplates } from 'src/services/template';
 import { genExcelTemplate } from 'src/services/utils';
 
 const { createTemplate, getTemplate, deleteTemplate } = require('src/services/template');
@@ -35,10 +36,23 @@ router.get('/', async (request: Request, response: Response) => {
   logDebug('  ** get template **  ');
 
   try {
-    validator(request.query, ['tid']);
-    const result = await getTemplate(request.query);
+    const { tid, cid } = request.query;
+    if (tid) {
+      const result = await getTemplate(request.query);
 
-    response.status(200).json(result);
+      response.status(200).json(result);
+      return;
+    }
+    if (cid) {
+      const result = await getTemplates(cid as string);
+      response.status(200).json(result);
+      return;
+    }
+
+    response.status(200).json({
+      data: null,
+      message: 'No templates found',
+    });
   } catch (error: any) {
     logError('router:create template ', error);
 
@@ -47,7 +61,7 @@ router.get('/', async (request: Request, response: Response) => {
   }
 });
 
-router.delete('/', async (request: Request, response: Response) => {
+router.delete('/delete', async (request: Request, response: Response) => {
   logDebug('  ** delete template **  ', request.query);
 
   try {

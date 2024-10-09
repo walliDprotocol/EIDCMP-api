@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import parameterValidator from 'src/core-services/parameterValidator';
 import {
   issueTokenForUser, loginUser, userProfile, issueApiToken, registerApiToken,
-  getKeys,
+  getKeys, deleteKey,
 } from 'src/services/auth';
 import { filterObject } from 'src/lib/util';
 
@@ -82,11 +82,11 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
 
 router.get('/google/login', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/gen-key', async (req: Request, res: Response) => {
+router.post('/key', async (req: Request, res: Response) => {
   try {
     logDebug(' **** Auth token route **** ');
     const { user } = req;
-    const { name = 'Default Name' } = req.query as unknown as { name: string };
+    const { name = 'Default Name' } = req.body as unknown as { name: string };
     logDebug(' ****name ****', name);
     logDebug(' ****user ****', user);
 
@@ -128,6 +128,29 @@ router.get('/keys', async (req: Request, res: Response) => {
     const { user } = req;
     logDebug(' **** keys route **** ', user);
     const result = await getKeys(user?.id);
+    res.json(result);
+  } catch (ex) {
+    logError('/keys ', ex);
+    res.status(500).json({ error: ex });
+  }
+});
+
+router.delete('/key', async (req: Request, res: Response) => {
+  try {
+    const { user } = req;
+    logDebug(' **** keys route **** ', user);
+    const { token } = req.query;
+    if (!user?.id) {
+      res.status(400).json({ error: 'User not found' });
+      return;
+    }
+
+    if (!token) {
+      res.status(400).json({ error: 'Token not found' });
+      return;
+    }
+
+    const result = await deleteKey(user?.id, token as string);
     res.json(result);
   } catch (ex) {
     logError('/keys ', ex);

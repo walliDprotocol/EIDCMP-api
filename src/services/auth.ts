@@ -317,3 +317,15 @@ export async function getKeys(authAccountId?:string) {
     throw ex;
   }
 }
+
+export async function deleteKey(authAccountId: string, tokenId: string) {
+  logDebug('********* deleteKey method **********', authAccountId, tokenId);
+  try {
+    const result = await DB.findOneAndUpdate(DataBaseSchemas.AUTH, { _id: authAccountId }, { $pull: { tokens: { id: tokenId } } });
+    logDebug('result', result);
+    return result;
+  } catch (ex) {
+    logError('Error deleteKey ', ex);
+    throw ex;
+  }
+}

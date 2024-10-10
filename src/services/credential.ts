@@ -1,9 +1,9 @@
 import { isEmptyObject } from 'src/lib/util';
 import config from 'src/config';
-import { PubNub } from 'wallid-certishop';
+import { getIOInstance } from 'src/app-middleware/socket';
 
 const {
-  FRONTEND_URL, PUBNUB_SUB_KEY, PUBNUB_PUB_KEY, PUBNUB_USER_ID,
+  FRONTEND_URL,
 } = config;
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('service:credential');
@@ -50,8 +50,8 @@ export async function createCredentialOfferUrl(body: CredentialOfferUrlParams) {
 }
 
 export async function createCredentialVerificationUrl({
-  credentialConfigurationType = 'NaturalPersonVerifiableID', format = 'jwt_vc_json', tid = '', guid = '',
-}: { credentialConfigurationType?: string, format?: string, tid?: string, guid?: string }) {
+  credentialConfigurationType = 'NaturalPersonVerifiableID', format = 'jwt_vc_json', id = '', tid = '', guid = '',
+}: { credentialConfigurationType?: string, format?: string, id?:string, tid?: string, guid?: string }) {
   logDebug('createCredentialVerificationUrl', credentialConfigurationType, format, tid);
   const requestCredentials = [{
     type: credentialConfigurationType,
@@ -75,7 +75,7 @@ export async function createCredentialVerificationUrl({
             ],
             filter: {
               type: 'string',
-              pattern: tid, // 66e0de878a539ace8c3624a4
+              pattern: tid,
             },
           },
         ],
@@ -84,6 +84,19 @@ export async function createCredentialVerificationUrl({
   },
 
   ];
+
+  if (id) {
+    requestCredentials[0].input_descriptor.constraints.fields.push({
+      path: [
+        '$.credentialSubject.id',
+      ],
+      filter: {
+        type: 'string',
+        pattern: id,
+      },
+    });
+  }
+
   const requestBody = {
     request_credentials: requestCredentials,
   };
@@ -109,21 +122,18 @@ export async function createCredentialVerificationUrl({
 }
 
 export async function sendSessionToken(guid: string, sessionId: string) {
-  const pubnub = new PubNub({
-    publishKey: PUBNUB_PUB_KEY,
-    subscribeKey: PUBNUB_SUB_KEY,
-    userId: PUBNUB_USER_ID,
-  });
-
+  const { io, users } = getIOInstance();
   try {
-    const result = await pubnub.publish({
-      channel: guid,
-      message: { sessionId },
-    });
+    const clients = io.sockets.sockets;
+    logDebug('users', users);
+    // Access all connected sockets
+    const targetSocket = clients.get(users[guid]);
+    if (!targetSocket) { throw new Error('Socket not found'); }
 
-    logDebug('Evento publicado com sucesso:', result);
+    targetSocket.emit('sessionId', { sessionId });
+    logDebug('Event sent:', guid, sessionId);
 
-    return result;
+    return sessionId;
   } catch (error) {
     logError('Erro ao publicar evento:', error);
 

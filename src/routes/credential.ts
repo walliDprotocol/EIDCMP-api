@@ -85,11 +85,12 @@ router.post('/create-verify-url', async (req, res) => {
 
   try {
     const {
+      id,
       tid,
       guid,
-    } = validator(req.body, ['tid', 'guid']);
+    } = validator(req.body, ['tid']);
 
-    const response = await createCredentialVerificationUrl({ tid, guid });
+    const response = await createCredentialVerificationUrl({ id, tid, guid });
 
     const verificationUrl = response;
 
@@ -105,10 +106,26 @@ router.get('/redirect/:sessionId', async (req, res) => {
 
   try {
     const { sessionId } = validator(req.params, ['sessionId']);
-    const { guid } = validator(req.query, ['guid']);
-
-    const token = await sendSessionToken(guid, sessionId);
-    res.status(200).json({ token });
+    const { guid } = req.query; // validator(req.query, ['guid']);
+    if (!guid) {
+      res.redirect(`/verify/${sessionId}?redirected=true`);
+      return;
+    }
+    // const token =
+    await sendSessionToken(guid as string, sessionId);
+    res.send(`
+      <html>
+        <body>
+          <h1>Request Processed, you can now close this tab</h1>
+          <script type="text/javascript">
+            // Close the browser tab after a brief delay
+            setTimeout(function() {
+              window.close();
+            }, 1000); // 1 second delay to show the message before closing
+          </script>
+        </body>
+      </html>
+    `);
   } catch (error:any) {
     logError('Error creating verification url: ', error);
     res.status(500).json({ error: error.message || error });

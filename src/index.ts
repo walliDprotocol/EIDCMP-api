@@ -1,6 +1,8 @@
 import express from 'express';
+import { createServer } from 'http';
 
 import { initializeWallet } from 'src/lib/waltid';
+import { initializeSocket } from 'src/app-middleware/socket';
 import middlewareFactory from './app-middleware/middlewareFactory';
 
 import config from './config';
@@ -20,7 +22,11 @@ async function startServer() {
 
   app.use(middlewareFactory(config));
 
-  app.listen(PORT, () => {
+  const httpServer = createServer(app);
+
+  initializeSocket(httpServer);
+
+  httpServer.listen(PORT, () => {
     logDebug(`Server is running on port ${PORT}`);
   });
 }

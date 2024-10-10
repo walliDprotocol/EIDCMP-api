@@ -1,4 +1,4 @@
-const { Schema } = require('mongoose');
+import { Schema } from 'mongoose';
 
 const tokenSchema = new Schema(
   {
@@ -9,4 +9,4 @@ const tokenSchema = new Schema(
 );
 tokenSchema.set('timestamps', true);
 
-module.exports = tokenSchema;
+export default tokenSchema;

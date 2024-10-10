@@ -18,6 +18,10 @@ export async function uploadFile(filename: string, file?: Express.Multer.File | 
     readablePhotoStream.push(null);
 
     const { db } = mongoose.connection;
+    if (!db) {
+      reject(new Error('No database connection'));
+      return;
+    }
     const bucket = new GridFSBucket(db, {
       bucketName: 'uploads',
     });

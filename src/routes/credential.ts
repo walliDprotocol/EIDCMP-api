@@ -1,10 +1,17 @@
 import { Router } from 'express';
 import validator from 'src/core-services/parameterValidator';
 import { createNewUser } from 'src/services/user';
-import { createCredentialOfferUrl } from 'src/services/credential';
+import {
+  createCredentialOfferUrl, createCredentialVerificationUrl, getSessionData, sendSessionToken,
+} from 'src/services/credential';
 import { sendEmailInviteUser } from 'src/services/mailer';
 import { UserCredentialType } from 'src/types';
+import { DataBaseSchemas } from 'src/types/enums';
+import { DB } from 'src/database';
 
+import config from 'src/config';
+
+const { WALTID_PUBLIC_WALLET } = config;
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:credential');
 
 const router = Router();
@@ -36,10 +43,12 @@ router.post('/create', async (req, res) => {
     });
 
     logDebug('result', newUser);
+    const caIssuerKey = await DB.findOne(DataBaseSchemas.CA, { _id: cid }, 'issuerKey issuerDid', null);
 
+    logDebug('caDID', caIssuerKey);
     const body = {
-      issuerKey: req.app.locals.WaltIdConfig.issuerKey,
-      issuerDid: req.app.locals.WaltIdConfig.issuerDid,
+      issuerKey: caIssuerKey.issuerKey,
+      issuerDid: caIssuerKey.issuerDid,
       credentialConfigurationId: `${req.body.credentialConfigurationId}_jwt_vc_json`,
       credentialData: {
         '@context': [
@@ -61,7 +70,7 @@ router.post('/create', async (req, res) => {
 
     // Invite the user via email
 
-    const resultInvite = await sendEmailInviteUser(newUser, { ...credencialIssuerDetails, waAdmin });
+    const resultInvite = await sendEmailInviteUser(newUser, { ...credencialIssuerDetails, waAdmin, credentialUrl });
 
     logDebug('result', resultInvite);
 
@@ -71,6 +80,60 @@ router.post('/create', async (req, res) => {
     // TODO: delete entry from db from createNewUser function call
     logError('Error inviting user: ', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/create-verify-url', async (req, res) => {
+  logDebug('  **  Create verify VC  **  ');
+
+  try {
+    const {
+      id,
+      tid,
+      guid,
+    } = validator(req.body, ['tid']);
+
+    const response = await createCredentialVerificationUrl({ id, tid, guid });
+
+    const verificationUrl = response;
+
+    res.status(200).json({ verificationUrl });
+  } catch (error:any) {
+    logError('Error creating verification url: ', error);
+    res.status(500).json({ error: error.message || error });
+  }
+});
+
+router.get('/redirect/:sessionId', async (req, res) => {
+  logDebug('  **  Get VC Session  **  ');
+
+  try {
+    const { sessionId } = validator(req.params, ['sessionId']);
+    const { guid } = req.query; // validator(req.query, ['guid']);
+    if (!guid) {
+      res.redirect(`/verify/${sessionId}?redirected=true`);
+      return;
+    }
+    // const token =
+    await sendSessionToken(guid as string, sessionId);
+    res.redirect(WALTID_PUBLIC_WALLET);
+  } catch (error:any) {
+    logError('Error creating verification url: ', error);
+    res.status(500).json({ error: error.message || error });
+  }
+});
+
+router.get('/data/:sessionId', async (req, res) => {
+  logDebug('  **  Get VC Session  Data**  ');
+
+  try {
+    const { sessionId } = validator(req.params, ['sessionId']);
+
+    const data = await getSessionData(sessionId);
+    res.status(200).json(data);
+  } catch (error:any) {
+    logError('Error retrieving session data: ', error);
+    res.status(500).json({ error: error.message || error });
   }
 });
 

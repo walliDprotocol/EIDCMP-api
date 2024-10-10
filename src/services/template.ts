@@ -49,13 +49,25 @@ export const getTemplate = async (input: { tid: string }) => {
   }
 };
 
+export const getTemplates = async (cid?: string) => {
+  logDebug(' ********* getTemplates *********** criteria ', cid);
+
+  try {
+    const templates = await DB.find(DataBaseSchemas.TEMPLATE, { cid }, '', null);
+    return templates;
+  } catch (ex) {
+    logError('Error getTemplates');
+    throw ex;
+  }
+};
+
 export const listUsersTaggedByStatus = async (input: { tid: string }) => {
   logDebug(' ********* listUsersTaggedByStatus *********** criteria ', input);
 
   try {
     // List all users for templateId with status pending_approval', 'active', 'revoke'
     // They are in user table!
-    const result = await DB.find(DataBaseSchemas.USER, { tid: input.tid }, '', null);
+    const result = await DB.find(DataBaseSchemas.USER, { tid: input.tid }, null, null);
 
     const finalUsers: UserCredentialType[] = result.map(async (obj: any) => {
       return { ...obj.toObject(), id: obj._id.toString() };

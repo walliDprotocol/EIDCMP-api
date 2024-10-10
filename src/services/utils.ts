@@ -1,9 +1,8 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable func-names */
-
-import { StringMap } from 'src/types';
 import { parse } from 'csv-parse';
 import { validateParseFile } from 'src/services/admin';
+import xlsx from 'xlsx';
 import { uploadFile } from './ftp';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:utils');
@@ -12,7 +11,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const fs = require('fs');
 
-const CVS_SPLIT_CHAR = ';';
+const CSV_SPLIT_CHAR = ';';
 const DataTypeSample = '<10-10-2020>';
 
 export const randomCode = async function (length: number, chars: string) {
@@ -64,7 +63,7 @@ const getHeadersForTables = async function (templateItem: any) {
   * @param {Object[]} templateItens
   */
 const generateExcelHeadersAndSample = async function (templateItens: any) {
-  let colHeaders: any = [];
+  let colHeaders: Array<{ id: string; title: string; sample: string }> = [];
   for (let i = 0; i < templateItens.length; i += 1) {
     const line = templateItens[i];
     logDebug(' item table  ', line);
@@ -93,55 +92,65 @@ const generateExcelHeadersAndSample = async function (templateItens: any) {
   return colHeaders;
 };
 
-export const genExcelTemplate = async function (template_id: string, templateItens: any) {
-  logDebug('INPUT :  template id ', template_id, ' templateItens ', templateItens);
+export const genExcelTemplate = async function (template_id:string, templateItens: any, format = 'xlsx') {
+  logDebug('INPUT: template id ', template_id, ' templateItens ', templateItens, ' format ', format);
 
   const parsedItens = await generateExcelHeadersAndSample(templateItens);
-  const headers = [];
-  const sampleItem: StringMap = {};
+  parsedItens.unshift({
+    id: '9995',
+    title: 'email',
+    sample: 'john_doe@sample.io',
+  });
+  logDebug('parsedItens ', parsedItens);
 
-  //! force  first column always be an email  !!
-  headers.push({ id: '9995', title: 'email' });
-  sampleItem['9995'] = 'john_doe@sample.io';
-
-  for (let i = 0; i < parsedItens.length; i += 1) {
-    headers.push({ title: parsedItens[i].title, id: parsedItens[i].id });
-    // logDebug('Sample item value id : ', parsedItens[i].id );
-    sampleItem[parsedItens[i].id] = parsedItens[i].sample;
-  }
-
-  logDebug('Excel Headers ', headers);
-  logDebug('Excel Samples Lines ', sampleItem);
-  const folder = './uploads/excelTemplates';
-
+  const folder = './uploads/templates';
   fs.mkdirSync(path.join(__dirname, folder), { recursive: true });
 
-  const filePath = path.join(__dirname, `/uploads/excelTemplates/template_${template_id}.csv`);
-  logDebug('filePath ', filePath);
+  let filePath;
 
-  const csvWriter = createCsvWriter({
-    path: filePath,
-    header: headers,
-    fieldDelimiter: CVS_SPLIT_CHAR,
-  });
+  if (format === 'csv') { // Handle CSV format
+    //
+    filePath = path.join(__dirname, `/uploads/templates/template_${template_id}.csv`);
+    logDebug('FilePath for CSV: ', filePath);
 
-  await csvWriter
-    .writeRecords([sampleItem]);
+    const csvWriter = createCsvWriter({
+      path: filePath,
+      header: parsedItens,
+      fieldDelimiter: CSV_SPLIT_CHAR,
+    });
 
-  logDebug('The CSV file was written successfully');
+    await csvWriter.writeRecords([{ ...Object.fromEntries(parsedItens.map((h) => [h.id, h.sample])) }]);
 
-  const excelTemplateBuffer = fs.readFileSync(filePath);
+    logDebug('The CSV file was written successfully');
+  } else if (format === 'xlsx') { // Handle XLSX format
+    //
+    filePath = path.join(__dirname, `/uploads/templates/template_${template_id}.xlsx`);
+    logDebug('FilePath for XLSX: ', filePath);
 
-  const { url: excelUrl } = await uploadFile(`template_${template_id}.csv`, { buffer: Buffer.from(new Uint8Array(excelTemplateBuffer)) });
+    const data = [parsedItens.map((h) => h.title), parsedItens.map((h) => h.sample)];
 
-  // const excelUrl = `excelTemplates/template_${template_id}.csv`;
+    const workbook = xlsx.utils.book_new();
+    const worksheet = xlsx.utils.aoa_to_sheet(data);
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    xlsx.writeFile(workbook, filePath);
 
-  logDebug('Location of excel file ', excelUrl);
+    logDebug('The XLSX file was written successfully');
+  } else {
+    throw new Error('Invalid format. Supported formats are csv and xlsx.');
+  }
 
-  // delete file locally!!
+  // Read the file to get its buffer
+  const fileBuffer = fs.readFileSync(filePath);
+
+  // Upload the file
+  const { url: fileUrl } = await uploadFile(`template_${template_id}.${format}`, { buffer: Buffer.from(fileBuffer) });
+
+  logDebug('Location of the file: ', fileUrl);
+
+  // Optionally delete the file locally after upload
   // fs.unlinkSync(filePath);
 
-  return excelUrl;
+  return filePath;
 };
 
 // email;PLACEHOLDER
@@ -167,7 +176,7 @@ const findHeadersDelimiter = async function (filePath: string) {
 };
 
 // for a given csv file parse all the information of rows!! Row[0] always be Headers
-const parseDataFromCVS = async function (filePath: string): Promise<string[][]> {
+const parseDataFromCSV = async function (filePath: string): Promise<string[][]> {
   logDebug('filePath ', filePath);
   const delimiterChar = await findHeadersDelimiter(filePath);
   logDebug('delimiterChar', delimiterChar);
@@ -182,6 +191,32 @@ const parseDataFromCVS = async function (filePath: string): Promise<string[][]> 
       .on('end', () => {
         resolve(csvData);
       });
+  });
+};
+
+const parseDataFromXLSX = async function (filePath: string): Promise<string[][]> {
+  logDebug('filePath ', filePath);
+
+  return new Promise((resolve, reject) => {
+    try {
+      // Read the workbook
+      const workbook = xlsx.readFile(filePath);
+
+      // Get the first sheet name
+      const firstSheetName = workbook.SheetNames[0];
+      logDebug('First sheet name: ', firstSheetName);
+
+      // Get the first sheet
+      const worksheet = workbook.Sheets[firstSheetName];
+
+      // Convert the sheet to JSON
+      let jsonData: string[][] = xlsx.utils.sheet_to_json(worksheet, { header: 1, raw: false }); // `header: 1` means we want an array of arrays
+      jsonData = jsonData.filter((row: any[]) => !row.every((cell) => cell === undefined || cell === null || cell === '')); logDebug('Parsed XLSX Data: ', jsonData);
+      resolve(jsonData); // Resolve with the parsed data
+    } catch (error) {
+      logDebug('Error parsing XLSX file: ', error);
+      reject(new Error('Failed to parse XLSX file'));
+    }
   });
 };
 
@@ -259,12 +294,24 @@ const checkIfContainTable = function (header: string[]) {
 // };
 
 // -> Import Excel Data to MySQL database
-export const importExcelData = async function (filePath: string, tid: number) {
+export const importExcelData = async function (filePath: string, tid: number, fileFormat: string) {
   const finalArray:any[] = [];
   let header: string[] = [];
   let i = 0;
   try {
-    const rows = await parseDataFromCVS(filePath);
+    let rows: string[][] = [];
+
+    switch (fileFormat) {
+      case 'csv':
+        rows = await parseDataFromCSV(filePath);
+        break;
+      case 'xlsx':
+        rows = await parseDataFromXLSX(filePath);
+        break;
+      default:
+        break;
+    }
+
     logDebug('***  Parse excel data **** ', rows);
 
     const haveTable = checkIfContainTable(rows[0]);

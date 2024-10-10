@@ -1,4 +1,5 @@
 import { verifyJWT } from 'src/lib/jwt';
+import { randomUUID } from 'crypto';
 
 import { DB } from 'src/database';
 import { filterObject } from 'src/lib/util';
@@ -6,6 +7,7 @@ import { DataBaseSchemas, OAuthTypes } from 'src/types/enums';
 import * as crypto from 'crypto';
 
 import { ErrorType } from 'src/constants';
+import { TokenEntry } from 'src/types/auth';
 
 const { WRONG_USERNAME_PASSWORD, INVALID_INVITE, DEFAULT_LOGIN_ERROR } = ErrorType;
 
@@ -29,6 +31,50 @@ const billingEntryBody = ({ email, walletAddress } : { email : string, walletAdd
     owner_email: email,
     owner_wallet: walletAddress,
   };
+};
+
+export const issueApiToken = async () => {
+  logDebug('********* issueApiKey method **********');
+  try {
+    const token = `WalliD-${generateKey(32)}`;
+    logDebug('token', token);
+
+    return { token };
+  } catch (ex) {
+    logError('Error validating data ', ex);
+    throw ex;
+  }
+};
+
+export const registerApiToken = async (
+  accountId: string | undefined,
+  token: string,
+  jwt: string,
+  name = 'Default Name',
+) => {
+  logDebug('********* registerApiToken method **********', accountId);
+  try {
+    const newTokenMap = await DB.createTokenMap({ token, jwt });
+
+    const tokenEntry: TokenEntry = {
+      id: randomUUID(),
+      token,
+      name,
+      dateCreated: new Date(),
+    };
+
+    const updatedUser = await DB.findOneAndUpdate(
+      DataBaseSchemas.AUTH,
+      { _id: accountId },
+      { $push: { tokens: tokenEntry } },
+      { upsert: true },
+    );
+
+    return { newTokenMap, updatedUser };
+  } catch (ex) {
+    logError('Error validating data ', ex);
+    throw ex;
+  }
 };
 
 export const issueTokenForUser = (userDetails: any) => {
@@ -143,6 +189,7 @@ export const registerUser = async (data: any) => {
         wa: walletAddress,
         email: data.email,
         username: data.username,
+        roles: ['admin'],
       };
       logDebug('admin', admin);
       const adminEntry = await DB.findOneAndUpdate(
@@ -205,7 +252,7 @@ export const userProfile = async (data: any) => {
       throw new Error('User not found');
     }
 
-    const filter = ['id', 'username', 'email', 'walletAddress'];
+    const filter = ['id', 'username', 'email', 'walletAddress', 'tokens'];
     const userFiltered = filterObject(user.toJSON(), filter);
     logDebug(' ****user **** after', userFiltered);
 
@@ -243,6 +290,42 @@ export async function verifyApiToken(token: string) {
     return false;
   } catch (ex) {
     logError('Error verifyApiToken ', ex);
+    throw ex;
+  }
+}
+
+export async function removeApiToken(token: string) {
+  logDebug('********* removeApiToken method **********', token);
+  try {
+    const result = await DB.findOneAndDelete(DataBaseSchemas.TOKEN, { token });
+    logDebug('result', result);
+    return result;
+  } catch (ex) {
+    logError('Error removeApiToken ', ex);
+    throw ex;
+  }
+}
+
+export async function getKeys(authAccountId?:string) {
+  logDebug('********* getKeys method **********', authAccountId);
+  try {
+    const result = await DB.findOne(DataBaseSchemas.AUTH, { _id: authAccountId }, { tokens: 1 });
+    logDebug('result', result);
+    return { tokens: result.tokens.map((e:any) => ({ ...e.toJSON(), token: `${e.token.substring(0, 8)}...${e.token.slice(-4)}` })) };
+  } catch (ex) {
+    logError('Error getKeys ', ex);
+    throw ex;
+  }
+}
+
+export async function deleteKey(authAccountId: string, tokenId: string) {
+  logDebug('********* deleteKey method **********', authAccountId, tokenId);
+  try {
+    const result = await DB.findOneAndUpdate(DataBaseSchemas.AUTH, { _id: authAccountId }, { $pull: { tokens: { id: tokenId } } });
+    logDebug('result', result);
+    return result;
+  } catch (ex) {
+    logError('Error deleteKey ', ex);
     throw ex;
   }
 }

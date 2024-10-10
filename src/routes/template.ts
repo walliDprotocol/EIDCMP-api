@@ -1,8 +1,11 @@
 import express, { Request, Response } from 'express';
+import { getTemplates } from 'src/services/template';
+import { genExcelTemplate } from 'src/services/utils';
 
 const { createTemplate, getTemplate, deleteTemplate } = require('src/services/template');
 const validator = require('src/core-services/parameterValidator');
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:template');
+const fs = require('fs');
 
 const router = express.Router();
 
@@ -33,10 +36,23 @@ router.get('/', async (request: Request, response: Response) => {
   logDebug('  ** get template **  ');
 
   try {
-    validator(request.query, ['tid']);
-    const result = await getTemplate(request.query);
+    const { tid, cid } = request.query;
+    if (tid) {
+      const result = await getTemplate(request.query);
 
-    response.status(200).json(result);
+      response.status(200).json(result);
+      return;
+    }
+    if (cid) {
+      const result = await getTemplates(cid as string);
+      response.status(200).json(result);
+      return;
+    }
+
+    response.status(200).json({
+      data: null,
+      message: 'No templates found',
+    });
   } catch (error: any) {
     logError('router:create template ', error);
 
@@ -45,7 +61,7 @@ router.get('/', async (request: Request, response: Response) => {
   }
 });
 
-router.delete('/', async (request: Request, response: Response) => {
+router.delete('/delete', async (request: Request, response: Response) => {
   logDebug('  ** delete template **  ', request.query);
 
   try {
@@ -77,6 +93,39 @@ router.delete('/', async (request: Request, response: Response) => {
   } catch (error: any) {
     logError('router:create template ', error);
 
+    response.status(error.code || 500)
+      .json({ data: null, message: error.message || 'Internal server error' });
+  }
+});
+
+router.get('/:tid/download/:fileFormat', async (request: Request, response: Response) => {
+  try {
+    logDebug('  ** get template file **  ', request.params, request.query);
+    const { tid, fileFormat } = validator(request.params, ['tid', 'fileFormat']);
+    const { templateItens } = await getTemplate({ tid });
+    const templateFilePath = await genExcelTemplate(tid, templateItens, fileFormat);
+
+    // Set correct headers for the response based on the file format
+    const mimeType = fileFormat === 'xlsx'
+      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      : 'text/csv';
+
+    // Set headers to indicate file attachment and correct content type
+    response.setHeader('Content-Disposition', `attachment; filename=template_${tid}.${fileFormat}`);
+    response.setHeader('Content-Type', mimeType);
+
+    // Send the file
+    response.sendFile(templateFilePath, (err) => {
+      if (err) {
+        logError('File download error: ', err);
+        response.status(500).send({ message: 'Error downloading file.' });
+      }
+
+      // Optionally delete the file after sending
+      fs.unlinkSync(templateFilePath);
+    });
+  } catch (error: any) {
+    logError('router:get template file', error);
     response.status(error.code || 500)
       .json({ data: null, message: error.message || 'Internal server error' });
   }

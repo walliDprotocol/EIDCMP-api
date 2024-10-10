@@ -6,6 +6,8 @@ const { logDebug, logError } = require('src/core-services/logFunctionFactory').g
 
 const { DB } = require('src/database');
 
+const { createKeyPair } = require('src/lib/waltid');
+
 const createCA = async (data) => {
   logDebug(' ********* Store cert Authority DB *********** ', data);
 
@@ -16,15 +18,17 @@ const createCA = async (data) => {
       const err = new Error('Forbidden');
       err.status = 403;
       err.message = 'ERR_NO_BILLING';
-      throw err;
-    } else {
-      const out = JSON.parse(JSON.stringify(await DB.create(DataBaseSchemas.CA, data)));
-      logDebug('CA Was created ', out);
 
-      return out;
+      throw err;
     }
+
+    const keyPair = await createKeyPair();
+    logDebug('keyPair ', keyPair);
+
+    const ca = await DB.create(DataBaseSchemas.CA, { ...data, ...keyPair });
+    return ca.toJSON();
   } catch (ex) {
-    logError('*************  error when create CA ################');
+    logError('Error creating CA', ex);
     throw ex;
   }
 };

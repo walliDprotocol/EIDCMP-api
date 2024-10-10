@@ -18,6 +18,8 @@ const { UNAUTHORIZED } = ErrorType;
 const authRoutes = [
   '/api/v1/',
   '/api/v1/auth/profile',
+  '/api/v1/auth/key',
+  '/api/v1/auth/keys',
 ];
 const authRoutesException = [
   '/api/v1/auth/',
@@ -26,6 +28,8 @@ const authRoutesException = [
   '/api/v1/infractions',
   '/api/v1/user',
   '/api/v1/assets/backgrounds',
+  '/api/v1/credential/redirect',
+  '/api/v1/credential/data',
 
 ];
 
@@ -44,7 +48,7 @@ const signValidatorHandler = async (req: Request, res: Response, next: NextFunct
       }
       const token = authorization.split('Bearer ')[1];
 
-      if (typeof token === 'string' && token.startsWith('SM-')) {
+      if (typeof token === 'string' && token.startsWith('WalliD-')) {
         const jwt = await getApiToken(token);
         logDebug('jwt', jwt);
         req.headers.authorization = `Bearer ${jwt}`;

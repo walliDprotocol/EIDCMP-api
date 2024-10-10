@@ -59,7 +59,7 @@ router.post('/revoke', async (request: Request, response: Response) => {
 //  Parse import File
 router.post('/parsefile', upload.single('file'), async (req: Request, res: Response) => {
   try {
-    const { tid } = validator(req.body, ['tid']);
+    const { tid, fileFormat } = validator(req.body, ['tid', 'fileFormat']);
     const dir = path.join(__dirname, '/uploads/');
 
     if (!dir) {
@@ -75,7 +75,7 @@ router.post('/parsefile', upload.single('file'), async (req: Request, res: Respo
 
     const filePath = path.join(dir, req.file?.filename || '');
 
-    const result = await importExcelData(filePath, tid);
+    const result = await importExcelData(filePath, tid, fileFormat);
     res.json(result);
   } catch (error: any) {
     logError('router:parsefile ', error);
@@ -91,7 +91,7 @@ router.post('/importfile', async (request: Request, response: Response) => {
   try {
     validator(request.body, IMPORT_FILE);
 
-    await AdminServices.importMultiData(request.body, request.app.locals.WaltIdConfig);
+    await AdminServices.importMultiData(request.body);
     response.status(200).json({ data: 'Invites will be sent' });
   } catch (error: any) {
     logError('router:create template ', error);

@@ -153,7 +153,6 @@ async function createNewUserWrapper({
   data,
   email,
   imgArray,
-  WaltIdConfig,
   waAdmin,
   credentialConfigurationId = 'NaturalPersonVerifiableID',
 }) {
@@ -166,11 +165,14 @@ async function createNewUserWrapper({
   });
 
   logDebug('result', newUser);
-  logDebug('WaltIdConfig', WaltIdConfig);
+
+  const caIssuerKey = await DB.findOne(DataBaseSchemas.CA, { _id: cid }, 'issuerKey issuerDid', null);
+
+  logDebug('caDID', caIssuerKey);
 
   const body = {
-    issuerKey: WaltIdConfig.issuerKey,
-    issuerDid: WaltIdConfig.issuerDid,
+    issuerKey: caIssuerKey.issuerKey,
+    issuerDid: caIssuerKey.issuerDid,
     credentialConfigurationId: `${credentialConfigurationId}_jwt_vc_json`,
     credentialData: {
       '@context': [

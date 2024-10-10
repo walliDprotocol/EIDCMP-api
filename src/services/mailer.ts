@@ -100,7 +100,10 @@ export const sendAdminInvite = async function (fromEmail: string, to: string, de
   };
 };
 
-export const sendEmailInviteUser = async function (newUser:UserCredentialType & { email: string }, credencialIssuerDetails: CredencialIssuerDetails) {
+export const sendEmailInviteUser = async function (
+  newUser:UserCredentialType & { email: string, },
+  credencialIssuerDetails: CredencialIssuerDetails & { credentialUrl: string },
+) {
   const from = EMAIL_SENDER || 'WalliD - Credentials <credentials@wallid.io>';
 
   const inviteData = {
@@ -118,7 +121,7 @@ export const sendEmailInviteUser = async function (newUser:UserCredentialType & 
   const link = generateLink({ assetId: inviteId._id });
 
   // base64 images don't work, using gridfs to store images
-  const qrCodeBuffer = await qrcode.toBuffer(`${inviteId._id}`, { type: 'png' });
+  const qrCodeBuffer = await qrcode.toBuffer(`${link}`, { type: 'png' });
 
   const { url: qrCodeImage } = await uploadFile(`qrCode_${inviteId._id}`, { buffer: Buffer.from(new Uint8Array(qrCodeBuffer)) });
   logDebug('qrCode url', qrCodeImage);

@@ -117,8 +117,8 @@ const createTemplateList = async (data) => {
     // update template hash after added template itens
 
     // Fev 2021 - Add template excel
-    const templateUrl = await genExcelTemplate(data.tid, addedItens);
-    await DB.findOneAndUpdate(DataBaseSchemas.TEMPLATE, { _id: data.tid }, { excelTemplate: templateUrl }, { new: true });
+    // const templateUrl = await genExcelTemplate(data.tid, addedItens);
+    // await DB.findOneAndUpdate(DataBaseSchemas.TEMPLATE, { _id: data.tid }, { excelTemplate: templateUrl }, { new: true });
 
     // console.log('template itens # ', addedItens);
     return {
@@ -127,7 +127,6 @@ const createTemplateList = async (data) => {
       template:
         {
           tid: data.tid,
-          excelTemplate: templateUrl,
         },
       templateItens: addedItens,
       // templateTable : addedTables

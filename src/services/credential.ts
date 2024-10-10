@@ -160,40 +160,43 @@ export async function getSessionData(sessionId:string) {
     ? parsedToken.vp?.verifiableCredential
     : [data.tokenResponse.vp_token];
 
-  return Array.isArray(vcs)
-    ? vcs.map((vc: string) => {
-      if (typeof vc !== 'string') {
-        logError(
-          'Invalid VC format: expected a string but got',
-          vc,
-        );
-        return vc;
-      }
-      const split = vc.split('~');
-      const parsed = parseJwt(split[0]);
+  return {
+    verificationResult: data.verificationResult,
+    credentials: Array.isArray(vcs)
+      ? vcs.map((vc: string) => {
+        if (typeof vc !== 'string') {
+          logError(
+            'Invalid VC format: expected a string but got',
+            vc,
+          );
+          return vc;
+        }
+        const split = vc.split('~');
+        const parsed = parseJwt(split[0]);
 
-      if (split.length === 1) return parsed.vc ? parsed.vc : parsed;
+        if (split.length === 1) return parsed.vc ? parsed.vc : parsed;
 
-      const credentialWithSdJWTAttributes = { ...parsed };
-      split.slice(1).forEach((item) => {
+        const credentialWithSdJWTAttributes = { ...parsed };
+        split.slice(1).forEach((item) => {
         // If it is key binding jwt, skip
-        if (item.split('.').length === 3) return;
+          if (item.split('.').length === 3) return;
 
-        const parsedItem = JSON.parse(
-          Buffer.from(item, 'base64').toString(),
-        );
-        credentialWithSdJWTAttributes.credentialSubject = {
-          [parsedItem[1]]: parsedItem[2],
-          ...credentialWithSdJWTAttributes.credentialSubject,
-        };
+          const parsedItem = JSON.parse(
+            Buffer.from(item, 'base64').toString(),
+          );
+          credentialWithSdJWTAttributes.credentialSubject = {
+            [parsedItem[1]]: parsedItem[2],
+            ...credentialWithSdJWTAttributes.credentialSubject,
+          };
         // credentialWithSdJWTAttributes.credentialSubject._sd.map((sdItem: string) => {
         //   if (sdItem === parsedItem[0]) {
         //     return `${parsedItem[1]}: ${parsedItem[2]}`
         //   }
         //   return sdItem;
         // })
-      });
-      return credentialWithSdJWTAttributes;
-    })
-    : [];
+        });
+        return credentialWithSdJWTAttributes;
+      })
+      : [],
+  };
 }

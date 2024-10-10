@@ -9,6 +9,9 @@ import { UserCredentialType } from 'src/types';
 import { DataBaseSchemas } from 'src/types/enums';
 import { DB } from 'src/database';
 
+import config from 'src/config';
+
+const { WALTID_PUBLIC_WALLET } = config;
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('router:credential');
 
 const router = Router();
@@ -113,19 +116,7 @@ router.get('/redirect/:sessionId', async (req, res) => {
     }
     // const token =
     await sendSessionToken(guid as string, sessionId);
-    res.send(`
-      <html>
-        <body>
-          <h1>Request Processed, you can now close this tab</h1>
-          <script type="text/javascript">
-            // Close the browser tab after a brief delay
-            setTimeout(function() {
-              window.close();
-            }, 1000); // 1 second delay to show the message before closing
-          </script>
-        </body>
-      </html>
-    `);
+    res.redirect(WALTID_PUBLIC_WALLET);
   } catch (error:any) {
     logError('Error creating verification url: ', error);
     res.status(500).json({ error: error.message || error });
@@ -139,7 +130,7 @@ router.get('/data/:sessionId', async (req, res) => {
     const { sessionId } = validator(req.params, ['sessionId']);
 
     const data = await getSessionData(sessionId);
-    res.status(200).json({ data });
+    res.status(200).json(data);
   } catch (error:any) {
     logError('Error retrieving session data: ', error);
     res.status(500).json({ error: error.message || error });

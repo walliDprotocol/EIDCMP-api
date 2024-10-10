@@ -28,6 +28,8 @@ const authRoutesException = [
   '/api/v1/infractions',
   '/api/v1/user',
   '/api/v1/assets/backgrounds',
+  '/api/v1/credential/redirect',
+  '/api/v1/credential/data',
 
 ];
 

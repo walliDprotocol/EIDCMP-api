@@ -67,7 +67,7 @@ export const listUsersTaggedByStatus = async (input: { tid: string }) => {
   try {
     // List all users for templateId with status pending_approval', 'active', 'revoke'
     // They are in user table!
-    const result = await DB.find(DataBaseSchemas.USER, { tid: input.tid }, '', null);
+    const result = await DB.find(DataBaseSchemas.USER, { tid: input.tid }, null, null);
 
     const finalUsers: UserCredentialType[] = result.map(async (obj: any) => {
       return { ...obj.toObject(), id: obj._id.toString() };

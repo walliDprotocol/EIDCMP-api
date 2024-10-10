@@ -210,7 +210,7 @@ const parseDataFromXLSX = async function (filePath: string): Promise<string[][]>
       const worksheet = workbook.Sheets[firstSheetName];
 
       // Convert the sheet to JSON
-      let jsonData: string[][] = xlsx.utils.sheet_to_json(worksheet, { header: 1 }); // `header: 1` means we want an array of arrays
+      let jsonData: string[][] = xlsx.utils.sheet_to_json(worksheet, { header: 1, raw: false }); // `header: 1` means we want an array of arrays
       jsonData = jsonData.filter((row: any[]) => !row.every((cell) => cell === undefined || cell === null || cell === '')); logDebug('Parsed XLSX Data: ', jsonData);
       resolve(jsonData); // Resolve with the parsed data
     } catch (error) {

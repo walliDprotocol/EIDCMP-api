@@ -57,6 +57,7 @@
     "passport-local": "^1.0.0",
     "passport-oauth": "^1.0.0",
     "qrcode": "^1.5.3",
+    "wallid-certishop": "^1.1.2",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {

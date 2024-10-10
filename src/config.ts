@@ -36,6 +36,11 @@ enum EnvEnum {
   WALTID_PUBLIC_VERIFIER = 'WALTID_PUBLIC_VERIFIER',
   WALTID_PUBLIC_ISSUER = 'WALTID_PUBLIC_ISSUER',
   WALTID_PUBLIC_WALLET = 'WALTID_PUBLIC_WALLET',
+
+  // Pubnub
+  PUBNUB_SUB_KEY = 'PUBNUB_SUB_KEY',
+  PUBNUB_PUB_KEY = 'PUBNUB_PUB_KEY',
+  PUBNUB_USER_ID = 'PUBNUB_USER_ID',
 }
 
 const env = {
@@ -176,6 +181,22 @@ const env = {
     env: 'WALTID_PUBLIC_WALLET',
     type: 'string',
     // required: true,
+  },
+  PUBNUB_SUB_KEY: {
+    env: 'PUBNUB_SUB_KEY',
+    type: 'string',
+    required: true,
+  },
+  PUBNUB_PUB_KEY: {
+    env: 'PUBNUB_PUB_KEY',
+    type: 'string',
+    required: true,
+
+  },
+  PUBNUB_USER_ID: {
+    env: 'PUBNUB_USER_ID',
+    type: 'string',
+    required: true,
   },
 } as const;
 

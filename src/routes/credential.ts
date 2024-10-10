@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import validator from 'src/core-services/parameterValidator';
 import { createNewUser } from 'src/services/user';
-import { createCredentialOfferUrl, createCredentialVerificationUrl } from 'src/services/credential';
+import {
+  createCredentialOfferUrl, createCredentialVerificationUrl, getSessionData, sendSessionToken,
+} from 'src/services/credential';
 import { sendEmailInviteUser } from 'src/services/mailer';
 import { UserCredentialType } from 'src/types';
 import { DataBaseSchemas } from 'src/types/enums';
@@ -84,15 +86,45 @@ router.post('/create-verify-url', async (req, res) => {
   try {
     const {
       tid,
-    } = validator(req.body, ['tid']);
+      guid,
+    } = validator(req.body, ['tid', 'guid']);
 
-    const response = await createCredentialVerificationUrl({ tid });
+    const response = await createCredentialVerificationUrl({ tid, guid });
 
     const verificationUrl = response;
 
     res.status(200).json({ verificationUrl });
   } catch (error:any) {
     logError('Error creating verification url: ', error);
+    res.status(500).json({ error: error.message || error });
+  }
+});
+
+router.get('/redirect/:sessionId', async (req, res) => {
+  logDebug('  **  Get VC Session  **  ');
+
+  try {
+    const { sessionId } = validator(req.params, ['sessionId']);
+    const { guid } = validator(req.query, ['guid']);
+
+    const token = await sendSessionToken(guid, sessionId);
+    res.status(200).json({ token });
+  } catch (error:any) {
+    logError('Error creating verification url: ', error);
+    res.status(500).json({ error: error.message || error });
+  }
+});
+
+router.get('/data/:sessionId', async (req, res) => {
+  logDebug('  **  Get VC Session  Data**  ');
+
+  try {
+    const { sessionId } = validator(req.params, ['sessionId']);
+
+    const data = await getSessionData(sessionId);
+    res.status(200).json({ data });
+  } catch (error:any) {
+    logError('Error retrieving session data: ', error);
     res.status(500).json({ error: error.message || error });
   }
 });

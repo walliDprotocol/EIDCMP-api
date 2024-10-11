@@ -149,7 +149,7 @@ export const sendEmailInviteUser = async function (
 
   const message = templateContent
     .replace('##NAME##', name)
-    .replace('##CREADNAME##', credencialIssuerDetails.templateName)
+    .replace('##CERTNAME##', credencialIssuerDetails.templateName)
     .replace('##CANAME##', credencialIssuerDetails.caName)
     .replace('##VERIFY_URL##', verifyLink)
     .replace('##CREDENTIALURL##', credencialIssuerDetails.credentialUrl)

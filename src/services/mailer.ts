@@ -118,15 +118,17 @@ export const sendEmailInviteUser = async function (
   });
   logDebug('InviteId', inviteId.toJSON());
 
-  const link = generateLink({ assetId: inviteId._id });
+  const verifyLink = generateLink({ assetId: inviteId._id });
+  logDebug('verifyLink', verifyLink);
 
-  // base64 images don't work, using gridfs to store images
-  const qrCodeBuffer = await qrcode.toBuffer(`${link}`, { type: 'png' });
+  const qrCodeCredentialBuffer = await qrcode.toBuffer(`${credencialIssuerDetails.credentialUrl}`, { type: 'png' });
+  const { url: qrCodeCredential } = await uploadFile(`qrCode_${inviteId._id}`, { buffer: Buffer.from(new Uint8Array(qrCodeCredentialBuffer)) });
 
-  const { url: qrCodeImage } = await uploadFile(`qrCode_${inviteId._id}`, { buffer: Buffer.from(new Uint8Array(qrCodeBuffer)) });
-  logDebug('qrCode url', qrCodeImage);
+  const qrCodeVerifyBuffer = await qrcode.toBuffer(`${verifyLink}`, { type: 'png' });
+  const { url: qrCodeVerify } = await uploadFile(`qrCode_${inviteId._id}_verify`, { buffer: Buffer.from(new Uint8Array(qrCodeVerifyBuffer)) });
+  logDebug('qrCode url', qrCodeCredential);
+  logDebug('qrCode url', qrCodeVerify);
   logDebug('Invite Data ', inviteData);
-  logDebug('Link', link);
 
   await setTimeout(() => {}, (Math.floor(Math.random() * 6) + 2) * 1000);
 
@@ -147,11 +149,13 @@ export const sendEmailInviteUser = async function (
 
   const message = templateContent
     .replace('##NAME##', name)
-    .replace('##CREADNAME##', credencialIssuerDetails.templateName)
+    .replace('##CERTNAME##', credencialIssuerDetails.templateName)
     .replace('##CANAME##', credencialIssuerDetails.caName)
-    .replace('##CLICK_URL##', link)
+    .replace('##VERIFY_URL##', verifyLink)
+    .replace('##CREDENTIALURL##', credencialIssuerDetails.credentialUrl)
     .replace('##_TITLE_##', title)
-    .replace('##QRCODE##', qrCodeImage);
+    .replace('##QRCODECREDENTIAL##', qrCodeCredential)
+    .replace('##QRCODEVERIFY##', qrCodeVerify);
 
   // const message = `<p>Your credentical for services <b>${details.template}</b> is ready <br> Please click on link for onboarding <a href='src/{details.link}>Visit WalliD</a>`
 

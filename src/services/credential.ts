@@ -100,7 +100,7 @@ export async function createCredentialVerificationUrl({
   const requestBody = {
     request_credentials: requestCredentials,
   };
-  logDebug('requestBody', JSON.stringify(requestBody, null, 2));
+  logDebug('requestBody', JSON.stringify(requestBody, null, 2), FRONTEND_URL);
   const response = await fetch(`${WALTID_PUBLIC_VERIFIER_URL}/openid4vc/verify`, {
     method: 'POST',
     headers: {

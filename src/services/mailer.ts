@@ -47,19 +47,21 @@ logDebug('send grid key ', SEND_GRID_API_KEY);
 sgMail.setApiKey(SEND_GRID_API_KEY);
 
 // send grid email
-const sendMail = function (from: string, to: string, subject: string, message: string, cc = []) {
+const sendMail = function (from: string, to: string, subject: string, message: string, attachments: any = [], cc = []) {
   const msg: MailDataRequired = {
     to: [to], // Change to your recipient
     from, // Change to your verified sender
     cc,
     subject,
     html: message,
+    attachments,
   };
 
-  sgMail
+  return sgMail
     .send(msg)
     .then((m) => {
       logDebug('Send email with success ', m);
+      return m;
     })
     .catch((error) => {
       logError(error);
@@ -157,9 +159,17 @@ export const sendEmailInviteUser = async function (
     .replace('##QRCODECREDENTIAL##', qrCodeCredential)
     .replace('##QRCODEVERIFY##', qrCodeVerify);
 
-  // const message = `<p>Your credentical for services <b>${details.template}</b> is ready <br> Please click on link for onboarding <a href='src/{details.link}>Visit WalliD</a>`
-
-  await sendMail(from, newUser.email, subject, message);
+  const attachments = newUser.imgArray.map(async (img) => {
+    const arrayBuffer = await (await fetch(img)).arrayBuffer();
+    const base64String = Buffer.from(arrayBuffer).toString('base64');
+    return {
+      content: base64String,
+      filename: 'image.png',
+      type: 'image/png',
+      disposition: 'attachment',
+    };
+  });
+  await sendMail(from, newUser.email, subject, message, await Promise.all(attachments));
 
   return {
     data: {

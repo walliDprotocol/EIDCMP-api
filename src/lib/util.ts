@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+
 export function hasSameProperties<T extends object>(obj: T, keys: Array<keyof T>): boolean {
   const typeKeys = Object.keys(obj) as Array<keyof T>;
   return keys.every((key) => {
@@ -24,4 +26,13 @@ export function filterObject(raw: Record<string, unknown>, allowed: string[]) {
 
 export function isEmptyObject(obj: Record<string, unknown> = {}): boolean {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
+}
+
+export function streamToBuffer(stream: Readable): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    stream.on('data', (chunk) => chunks.push(chunk));
+    stream.on('error', reject);
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+  });
 }

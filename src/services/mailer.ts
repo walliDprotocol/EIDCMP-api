@@ -8,7 +8,8 @@ import config from 'src/config';
 import { UserCredentialType } from 'src/types';
 import { DataBaseSchemas } from 'src/types/enums';
 import { DB } from 'src/database';
-import { uploadFile } from 'src/services/ftp';
+import { getFile, uploadFile } from 'src/services/ftp';
+import { streamToBuffer } from 'src/lib/util';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('services:mailer');
 
@@ -160,7 +161,8 @@ export const sendEmailInviteUser = async function (
     .replace('##QRCODEVERIFY##', qrCodeVerify);
 
   const attachments = newUser.imgArray.map(async (img) => {
-    const arrayBuffer = await (await fetch(img)).arrayBuffer();
+    const bucketReadStream = await getFile(img.split('ftp/')[1]);
+    const arrayBuffer = await streamToBuffer(bucketReadStream);
     const base64String = Buffer.from(arrayBuffer).toString('base64');
     return {
       content: base64String,

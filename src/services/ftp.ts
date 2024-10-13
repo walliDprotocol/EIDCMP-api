@@ -4,7 +4,7 @@ import config from 'src/config';
 
 const { logDebug, logError } = require('src/core-services/logFunctionFactory').getLogger('service:upload');
 
-const { GridFSBucket } = mongo;
+const { GridFSBucket, ObjectId } = mongo;
 
 const { DOMAIN_ENV } = config;
 
@@ -44,4 +44,19 @@ export async function uploadFile(filename: string, file?: Express.Multer.File | 
       });
     });
   });
+}
+
+export async function getFile(fileId: string) {
+  logDebug('fileId', fileId);
+  const fileIdObjectId = new ObjectId(fileId);
+  const { db } = mongoose.connection;
+  if (!db) {
+    logError('No database connection');
+    throw new Error('No database connection');
+  }
+  const bucket = new GridFSBucket(db, {
+    bucketName: 'uploads',
+  });
+  const downloadStream = bucket.openDownloadStream(fileIdObjectId);
+  return downloadStream;
 }

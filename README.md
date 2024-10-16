@@ -18,6 +18,15 @@ pnpm run dev
 
 ## API Endpoints
 
+### Credential Authority Profile
+
+- POST /api/v1/ca/ - create new CA
+  ```json
+  {
+    "wa" : "wallet_address",
+    "admin_email" : "admin_email"
+  }
+
 ### Authentication & Profile
 - POST /api/v1/auth/signup - create new user
   ```json
